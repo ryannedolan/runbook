@@ -361,6 +361,126 @@ class ChampionTitle extends Achievement {
   }
 }
 
+/// A title earned by accumulating a cumulative score across all Qs in
+/// a given sport. Used by FastCAT (BCAT/DCAT/FCAT*) where the title
+/// threshold is total points, not Q count.
+class PointAccumulationTitle extends Achievement {
+  PointAccumulationTitle({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.sport,
+    required this.sportFilter,
+    required this.pointsNeeded,
+  });
+
+  @override
+  final String id;
+  @override
+  final String title;
+  @override
+  final String description;
+  @override
+  final String sport;
+
+  /// Sport whose Qs contribute. Q.sport must match.
+  final Sport sportFilter;
+  final int pointsNeeded;
+
+  @override
+  bool acceptsQ(Q q) => q.sport == sportFilter && q.score != null;
+
+  @override
+  AchievementResult evaluate(List<Q> qs) {
+    final relevant = qs.where(acceptsQ).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+    final total = relevant.fold<int>(0, (s, q) => s + (q.score ?? 0));
+    final contributing = relevant.map((q) => q.id).toList();
+
+    if (total >= pointsNeeded) {
+      var running = 0;
+      Q? unlocker;
+      for (final q in relevant) {
+        running += q.score ?? 0;
+        if (running >= pointsNeeded) {
+          unlocker = q;
+          break;
+        }
+      }
+      return AchievementResult(
+        achievement: this,
+        have: total,
+        need: pointsNeeded,
+        unlockedAt: unlocker?.date,
+        unlockedByQId: unlocker?.id,
+        contributingQIds: contributing,
+      );
+    }
+    return AchievementResult.inProgress(
+      achievement: this,
+      have: total,
+      need: pointsNeeded,
+      contributingQIds: contributing,
+    );
+  }
+}
+
+/// A scentwork title — N qualifying runs in a given (element, level).
+class ScentElementLevelTitle extends Achievement {
+  ScentElementLevelTitle({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.element,
+    required this.level,
+    this.qCountNeeded = 3,
+  });
+
+  @override
+  final String id;
+  @override
+  final String title;
+  @override
+  final String description;
+  @override
+  String get sport => 'AKC Scentwork';
+
+  final ScentElement element;
+  final ScentLevel level;
+  final int qCountNeeded;
+
+  @override
+  bool acceptsQ(Q q) =>
+      q.sport == Sport.scentwork &&
+      q.scentElement == element &&
+      q.scentLevel == level;
+
+  @override
+  AchievementResult evaluate(List<Q> qs) {
+    final direct = qs.where(acceptsQ).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+    final contributing = direct.map((q) => q.id).toList();
+
+    if (direct.length >= qCountNeeded) {
+      final unlocker = direct[qCountNeeded - 1];
+      return AchievementResult(
+        achievement: this,
+        have: direct.length,
+        need: qCountNeeded,
+        unlockedAt: unlocker.date,
+        unlockedByQId: unlocker.id,
+        contributingQIds: contributing,
+      );
+    }
+    return AchievementResult.inProgress(
+      achievement: this,
+      have: direct.length,
+      need: qCountNeeded,
+      contributingQIds: contributing,
+    );
+  }
+}
+
 /// Qualification for the AKC National Agility Championship for a given
 /// year. Window is Sep 1 (year-1) through Aug 31 (year), inclusive.
 /// Composite criterion: enough MACH points AND enough double-Qs (where

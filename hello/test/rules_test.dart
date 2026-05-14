@@ -221,6 +221,41 @@ void main() {
       expect(results.where((r) => r.achievement.id == 'akc.fast.nf'), isEmpty);
     });
 
+    test('FastCAT: 150 cumulative points unlocks BCAT', () {
+      final qs = [
+        for (var i = 0; i < 9; i++)
+          Q.create(
+            dogId: 'dog1',
+            date: DateTime(2026, 1, 1 + i),
+            agilityClass: AgilityClass.fast, // placeholder
+            level: AgilityLevel.novice,
+            sport: Sport.fastCAT,
+            score: 17,
+          ),
+      ];
+      final results = RulesEngine().evaluate(qs);
+      final bcat = results.firstWhere((r) => r.achievement.id == 'akc.fastcat.bcat');
+      expect(bcat.isUnlocked, isTrue);
+    });
+
+    test('Scentwork: 3 Novice Container Qs unlocks SCN', () {
+      final qs = [
+        for (var i = 0; i < 3; i++)
+          Q.create(
+            dogId: 'dog1',
+            date: DateTime(2026, 1, 1 + i),
+            agilityClass: AgilityClass.fast, // placeholder
+            level: AgilityLevel.novice,
+            sport: Sport.scentwork,
+            scentElement: ScentElement.container,
+            scentLevel: ScentLevel.novice,
+          ),
+      ];
+      final results = RulesEngine().evaluate(qs);
+      final scn = results.firstWhere((r) => r.achievement.id == 'akc.sw.container.novice');
+      expect(scn.isUnlocked, isTrue);
+    });
+
     test('NAC qualifies on 4 QQs + 400 MACH points in window', () {
       final year = DateTime.now().year;
       // Build 4 calendar days each with a Master Std and a Master JWW Q,

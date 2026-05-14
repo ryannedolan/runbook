@@ -186,6 +186,29 @@ _TitleSpec _titleSpecFor(Achievement a) {
       foreground: Colors.amber.shade300,
     );
   }
+  if (a is PointAccumulationTitle && a.sportFilter == Sport.fastCAT) {
+    return _TitleSpec(
+      icon: Icons.bolt,
+      background: a.pointsNeeded >= 1000
+          ? Colors.lightBlue.shade700
+          : Colors.lightBlue.shade500,
+    );
+  }
+  if (a is ScentElementLevelTitle) {
+    // tint by level (deeper = harder)
+    final l = a.level;
+    final shade = switch (l) {
+      ScentLevel.novice => Colors.teal.shade400,
+      ScentLevel.advanced => Colors.teal.shade600,
+      ScentLevel.excellent => Colors.teal.shade700,
+      ScentLevel.master => Colors.teal.shade800,
+      ScentLevel.detective => Colors.teal.shade900,
+    };
+    return _TitleSpec(
+      icon: Icons.search,
+      background: shade,
+    );
+  }
   if (a is ChampionTitle) {
     return _TitleSpec(
       icon: Icons.military_tech,

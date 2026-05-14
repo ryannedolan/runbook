@@ -41,28 +41,54 @@ class _AddQPageState extends State<AddQPage> {
       if (q != null) {
         await _ctrl.answer(q.dogId, context);
         if (!mounted) return;
-        await _ctrl.answer((q.agilityClass, q.preferred), context);
+        await _ctrl.answer(q.sport, context);
         if (!mounted) return;
-        if (!q.agilityClass.isPremier) {
-          await _ctrl.answer(q.level, context);
-          if (!mounted) return;
-        }
-        await _ctrl.answer(q.date, context);
-        if (!mounted) return;
-        await _ctrl.answer(q.placement, context);
-        if (!mounted) return;
-        await _ctrl.answer(q.timeSeconds, context);
-        if (!mounted) return;
-        if (_acceptsYards(q.agilityClass)) {
-          await _ctrl.answer(q.yards, context);
-          if (!mounted) return;
-        }
-        if (_acceptsScore(q.agilityClass)) {
-          await _ctrl.answer(q.score?.toDouble(), context);
-          if (!mounted) return;
-        }
-        if (_acceptsMachPoints(q.agilityClass, q.level, q.preferred)) {
-          await _ctrl.answer(q.machPoints, context);
+        switch (q.sport) {
+          case Sport.akcAgility:
+            await _ctrl.answer((q.agilityClass, q.preferred), context);
+            if (!mounted) return;
+            if (!q.agilityClass.isPremier) {
+              await _ctrl.answer(q.level, context);
+              if (!mounted) return;
+            }
+            await _ctrl.answer(q.date, context);
+            if (!mounted) return;
+            await _ctrl.answer(q.placement, context);
+            if (!mounted) return;
+            await _ctrl.answer(q.timeSeconds, context);
+            if (!mounted) return;
+            if (_acceptsYards(q.agilityClass)) {
+              await _ctrl.answer(q.yards, context);
+              if (!mounted) return;
+            }
+            if (_acceptsScore(q.agilityClass)) {
+              await _ctrl.answer(q.score?.toDouble(), context);
+              if (!mounted) return;
+            }
+            if (_acceptsMachPoints(q.agilityClass, q.level, q.preferred)) {
+              await _ctrl.answer(q.machPoints, context);
+            }
+            break;
+          case Sport.fastCAT:
+            await _ctrl.answer(q.date, context);
+            if (!mounted) return;
+            await _ctrl.answer(q.placement, context);
+            if (!mounted) return;
+            await _ctrl.answer(q.score?.toDouble(), context);
+            if (!mounted) return;
+            await _ctrl.answer(q.timeSeconds, context);
+            break;
+          case Sport.scentwork:
+            await _ctrl.answer(q.scentElement, context);
+            if (!mounted) return;
+            await _ctrl.answer(q.scentLevel, context);
+            if (!mounted) return;
+            await _ctrl.answer(q.date, context);
+            if (!mounted) return;
+            await _ctrl.answer(q.placement, context);
+            if (!mounted) return;
+            await _ctrl.answer(q.timeSeconds, context);
+            break;
         }
       } else if (widget.preselectedDogId != null) {
         await _ctrl.answer(widget.preselectedDogId, context);
@@ -133,6 +159,24 @@ class _AddQPageState extends State<AddQPage> {
         ),
       );
     }
+    if (!a.containsKey('sport')) {
+      return ConvoStep(
+        key: 'sport',
+        prompt: 'Which sport?',
+        input: ChoiceInput<Sport>([
+          for (final s in Sport.values) Choice(s.short, s),
+        ]),
+      );
+    }
+    final sport = a['sport'] as Sport;
+    return switch (sport) {
+      Sport.akcAgility => _agilityStep(a),
+      Sport.fastCAT => _fastCATStep(a),
+      Sport.scentwork => _scentworkStep(a),
+    };
+  }
+
+  ConvoStep? _agilityStep(Map<String, Object?> a) {
     if (!a.containsKey('classDivision')) {
       return ConvoStep(
         key: 'classDivision',
@@ -205,6 +249,97 @@ class _AddQPageState extends State<AddQPage> {
         input: NumberInputStep(hint: 'e.g. 24'),
       );
     }
+    return _finalStep(a);
+  }
+
+  ConvoStep? _fastCATStep(Map<String, Object?> a) {
+    if (!a.containsKey('date')) {
+      return ConvoStep(
+        key: 'date',
+        prompt: 'When was the run?',
+        input: DateInputStep(initial: DateTime.now()),
+      );
+    }
+    if (!a.containsKey('placement')) {
+      return ConvoStep(
+        key: 'placement',
+        prompt: 'Did you place?',
+        input: ChoiceInput<int?>([
+          Choice('1st', 1),
+          Choice('2nd', 2),
+          Choice('3rd', 3),
+          Choice('4th', 4),
+          Choice('No placement', null),
+        ]),
+      );
+    }
+    if (!a.containsKey('score')) {
+      return ConvoStep(
+        key: 'score',
+        prompt: 'FastCAT points earned?',
+        input: NumberInputStep(hint: 'e.g. 17', suffix: ' pts'),
+      );
+    }
+    if (!a.containsKey('timeSeconds')) {
+      return ConvoStep(
+        key: 'timeSeconds',
+        prompt: 'Time on the course? (seconds, optional)',
+        input: NumberInputStep(hint: 'e.g. 8.4', suffix: 's'),
+      );
+    }
+    return _finalStep(a);
+  }
+
+  ConvoStep? _scentworkStep(Map<String, Object?> a) {
+    if (!a.containsKey('scentElement')) {
+      return ConvoStep(
+        key: 'scentElement',
+        prompt: 'Which element?',
+        input: ChoiceInput<ScentElement>([
+          for (final e in ScentElement.values) Choice(e.label, e),
+        ]),
+      );
+    }
+    if (!a.containsKey('scentLevel')) {
+      return ConvoStep(
+        key: 'scentLevel',
+        prompt: 'Which level?',
+        input: ChoiceInput<ScentLevel>([
+          for (final l in ScentLevel.values) Choice(l.label, l),
+        ]),
+      );
+    }
+    if (!a.containsKey('date')) {
+      return ConvoStep(
+        key: 'date',
+        prompt: 'When was the Q?',
+        input: DateInputStep(initial: DateTime.now()),
+      );
+    }
+    if (!a.containsKey('placement')) {
+      return ConvoStep(
+        key: 'placement',
+        prompt: 'Did you place?',
+        input: ChoiceInput<int?>([
+          Choice('1st', 1),
+          Choice('2nd', 2),
+          Choice('3rd', 3),
+          Choice('4th', 4),
+          Choice('No placement', null),
+        ]),
+      );
+    }
+    if (!a.containsKey('timeSeconds')) {
+      return ConvoStep(
+        key: 'timeSeconds',
+        prompt: 'Search time? (seconds, optional)',
+        input: NumberInputStep(hint: 'e.g. 33.5', suffix: 's'),
+      );
+    }
+    return _finalStep(a);
+  }
+
+  ConvoStep? _finalStep(Map<String, Object?> a) {
     if (_isEditing) {
       if (!a.containsKey('saveEdit')) {
         return ConvoStep(
@@ -236,17 +371,54 @@ class _AddQPageState extends State<AddQPage> {
   }
 
   Future<void> _complete(BuildContext _, Map<String, Object?> a) async {
-    final cd = a['classDivision'] as _ClassDivision;
-    final cls = cd.$1;
-    final preferred = cd.$2;
-    final level = (cls.isPremier ? AgilityLevel.master : a['level']) as AgilityLevel;
-
+    final sport = a['sport'] as Sport;
+    final date = a['date'] as DateTime;
     final placement = a['placement'] as int?;
-
     final timeSeconds = (a['timeSeconds'] as num?)?.toDouble();
-    final yards = (a['yards'] as num?)?.toDouble();
     final score = (a['score'] as num?)?.toInt();
-    final machPoints = (a['machPoints'] as num?)?.toInt() ?? 0;
+
+    // Sport-specific bindings. For non-agility Qs we set placeholder
+    // agilityClass/level since they're required but ignored.
+    AgilityClass cls;
+    AgilityLevel level;
+    bool preferred;
+    double? yards;
+    int machPoints;
+    ScentElement? scentElement;
+    ScentLevel? scentLevel;
+
+    switch (sport) {
+      case Sport.akcAgility:
+        final cd = a['classDivision'] as _ClassDivision;
+        cls = cd.$1;
+        preferred = cd.$2;
+        level = cls.isPremier
+            ? AgilityLevel.master
+            : a['level'] as AgilityLevel;
+        yards = (a['yards'] as num?)?.toDouble();
+        machPoints = (a['machPoints'] as num?)?.toInt() ?? 0;
+        scentElement = null;
+        scentLevel = null;
+        break;
+      case Sport.fastCAT:
+        cls = AgilityClass.fast; // placeholder
+        level = AgilityLevel.novice;
+        preferred = false;
+        yards = null;
+        machPoints = 0;
+        scentElement = null;
+        scentLevel = null;
+        break;
+      case Sport.scentwork:
+        cls = AgilityClass.fast; // placeholder
+        level = AgilityLevel.novice;
+        preferred = false;
+        yards = null;
+        machPoints = 0;
+        scentElement = a['scentElement'] as ScentElement?;
+        scentLevel = a['scentLevel'] as ScentLevel?;
+        break;
+    }
 
     if (_isEditing) {
       if (a['saveEdit'] == 'cancel') {
@@ -254,7 +426,8 @@ class _AddQPageState extends State<AddQPage> {
         return;
       }
       final updated = widget.editing!.copyWith(
-        date: a['date'] as DateTime,
+        date: date,
+        sport: sport,
         agilityClass: cls,
         level: level,
         preferred: preferred,
@@ -267,6 +440,10 @@ class _AddQPageState extends State<AddQPage> {
         score: score,
         clearScore: score == null,
         machPoints: machPoints,
+        scentElement: scentElement,
+        clearScentElement: scentElement == null,
+        scentLevel: scentLevel,
+        clearScentLevel: scentLevel == null,
       );
       await widget.repo.updateQ(updated);
       if (mounted) Navigator.of(context).pop(1);
@@ -275,7 +452,8 @@ class _AddQPageState extends State<AddQPage> {
 
     final q = Q.create(
       dogId: a['dog'] as String,
-      date: a['date'] as DateTime,
+      date: date,
+      sport: sport,
       agilityClass: cls,
       level: level,
       preferred: preferred,
@@ -284,12 +462,14 @@ class _AddQPageState extends State<AddQPage> {
       yards: yards,
       score: score,
       machPoints: machPoints,
+      scentElement: scentElement,
+      scentLevel: scentLevel,
     );
     await widget.repo.addQ(q);
     _savedCount++;
 
     if (a['addAnother'] == true) {
-      _ctrl.rewindToKey('classDivision');
+      _ctrl.rewindToKey('sport');
     } else {
       if (mounted) Navigator.of(context).pop(_savedCount);
     }

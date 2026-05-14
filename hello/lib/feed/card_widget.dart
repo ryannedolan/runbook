@@ -307,11 +307,20 @@ class QRibbon extends StatelessWidget {
   final Q q;
   final VoidCallback onTap;
 
+  String _classLabel() => switch (q.sport) {
+        Sport.akcAgility => () {
+            final levelLabel =
+                q.agilityClass.isPremier ? '' : '${q.level.label} ';
+            final divLabel = q.preferred ? 'P' : '';
+            return '$levelLabel${q.agilityClass.short}$divLabel';
+          }(),
+        Sport.fastCAT => 'FastCAT',
+        Sport.scentwork => 'SW ${q.scentElement?.short ?? '?'}${q.scentLevel?.short ?? '?'}',
+      };
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final levelLabel = q.agilityClass.isPremier ? '' : '${q.level.label} ';
-    final divLabel = q.preferred ? 'P' : '';
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -327,7 +336,7 @@ class QRibbon extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$levelLabel${q.agilityClass.short}$divLabel',
+                  _classLabel(),
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,

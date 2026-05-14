@@ -1,6 +1,8 @@
 import '../models/q.dart';
 import 'achievement.dart';
 import 'akc_agility.dart';
+import 'akc_fastcat.dart';
+import 'akc_scentwork.dart';
 
 typedef Gate = bool Function(List<Q> qs);
 
@@ -56,7 +58,12 @@ class RuleNode {
 /// against a list of Qs.
 class RulesEngine {
   RulesEngine({List<RuleNode>? trees})
-      : _trees = trees ?? [akcAgilityTree()];
+      : _trees = trees ??
+            [
+              akcAgilityTree(),
+              akcFastCATTree(),
+              akcScentworkTree(),
+            ];
 
   final List<RuleNode> _trees;
 

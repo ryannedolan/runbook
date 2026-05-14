@@ -18,6 +18,45 @@ extension SportX on Sport {
       };
 }
 
+/// AKC Scentwork elements. Each (element, level) combination titles
+/// independently (e.g. SCN = Scentwork Container Novice).
+enum ScentElement { container, interior, exterior, buried }
+
+extension ScentElementX on ScentElement {
+  String get label => switch (this) {
+        ScentElement.container => 'Container',
+        ScentElement.interior => 'Interior',
+        ScentElement.exterior => 'Exterior',
+        ScentElement.buried => 'Buried',
+      };
+  String get short => switch (this) {
+        ScentElement.container => 'C',
+        ScentElement.interior => 'I',
+        ScentElement.exterior => 'E',
+        ScentElement.buried => 'B',
+      };
+}
+
+/// Scentwork levels — Novice → Detective.
+enum ScentLevel { novice, advanced, excellent, master, detective }
+
+extension ScentLevelX on ScentLevel {
+  String get label => switch (this) {
+        ScentLevel.novice => 'Novice',
+        ScentLevel.advanced => 'Advanced',
+        ScentLevel.excellent => 'Excellent',
+        ScentLevel.master => 'Master',
+        ScentLevel.detective => 'Detective',
+      };
+  String get short => switch (this) {
+        ScentLevel.novice => 'N',
+        ScentLevel.advanced => 'A',
+        ScentLevel.excellent => 'E',
+        ScentLevel.master => 'M',
+        ScentLevel.detective => 'D',
+      };
+}
+
 /// AKC agility classes we currently model. Easy to extend.
 enum AgilityClass {
   standard,
@@ -87,6 +126,8 @@ class Q {
     this.score,
     this.timeSeconds,
     this.machPoints = 0,
+    this.scentElement,
+    this.scentLevel,
     this.notes,
   });
 
@@ -94,8 +135,15 @@ class Q {
   final String dogId;
   final DateTime date;
   final Sport sport;
+
+  /// Agility class — only meaningful when [sport] is AKC Agility.
+  /// FastCAT/Scentwork Qs leave it at a placeholder (AgilityClass.fast).
   final AgilityClass agilityClass;
   final AgilityLevel level;
+
+  /// Scentwork-only — null on agility/FastCAT Qs.
+  final ScentElement? scentElement;
+  final ScentLevel? scentLevel;
 
   /// True if this Q was earned in the Preferred division. Preferred
   /// titles use parallel name schemes (NAP, MXP, PAX, ...). Premier
@@ -129,6 +177,8 @@ class Q {
     int? score,
     double? timeSeconds,
     int machPoints = 0,
+    ScentElement? scentElement,
+    ScentLevel? scentLevel,
     String? notes,
   }) {
     return Q(
@@ -144,6 +194,8 @@ class Q {
       score: score,
       timeSeconds: timeSeconds,
       machPoints: machPoints,
+      scentElement: scentElement,
+      scentLevel: scentLevel,
       notes: notes,
     );
   }
@@ -172,6 +224,10 @@ class Q {
     double? timeSeconds,
     bool clearTimeSeconds = false,
     int? machPoints,
+    ScentElement? scentElement,
+    bool clearScentElement = false,
+    ScentLevel? scentLevel,
+    bool clearScentLevel = false,
     String? notes,
   }) => Q(
     id: id,
@@ -186,6 +242,8 @@ class Q {
     score: clearScore ? null : (score ?? this.score),
     timeSeconds: clearTimeSeconds ? null : (timeSeconds ?? this.timeSeconds),
     machPoints: machPoints ?? this.machPoints,
+    scentElement: clearScentElement ? null : (scentElement ?? this.scentElement),
+    scentLevel: clearScentLevel ? null : (scentLevel ?? this.scentLevel),
     notes: notes ?? this.notes,
   );
 
@@ -202,6 +260,8 @@ class Q {
     if (score != null) 'score': score,
     if (timeSeconds != null) 'timeSeconds': timeSeconds,
     if (machPoints != 0) 'machPoints': machPoints,
+    if (scentElement != null) 'scentElement': scentElement!.name,
+    if (scentLevel != null) 'scentLevel': scentLevel!.name,
     if (notes != null) 'notes': notes,
   };
 
@@ -220,6 +280,12 @@ class Q {
     score: (json['score'] as num?)?.toInt(),
     timeSeconds: (json['timeSeconds'] as num?)?.toDouble(),
     machPoints: (json['machPoints'] as num?)?.toInt() ?? 0,
+    scentElement: json['scentElement'] is String
+        ? ScentElement.values.byName(json['scentElement'] as String)
+        : null,
+    scentLevel: json['scentLevel'] is String
+        ? ScentLevel.values.byName(json['scentLevel'] as String)
+        : null,
     notes: json['notes'] as String?,
   );
 }
