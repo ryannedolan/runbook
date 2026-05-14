@@ -1,0 +1,36 @@
+name: Build and deploy web to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hello
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.41.9
+
+      - run: flutter pub get
+
+      - run: flutter test
+
+      - run: flutter build web --release --base-href=/runbook/
+
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: hello/build/web
+          publish_branch: gh-pages
+          force_orphan: true
