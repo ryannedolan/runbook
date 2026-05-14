@@ -9,6 +9,7 @@ import '../rules/akc_agility.dart';
 import '../rules/engine.dart';
 import 'dog_profile_page.dart';
 import 'feed_items.dart';
+import 'widgets/ribbons.dart';
 
 class AchievementDetailPage extends StatelessWidget {
   const AchievementDetailPage({
@@ -81,29 +82,18 @@ class AchievementDetailPage extends StatelessWidget {
       children: [
         Row(
           children: [
-            if (r.isUnlocked)
-              Container(
-                width: 56,
-                height: 56,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [Color(0xFFFFD86A), Color(0xFFE3A100)],
-                  ),
+            SizedBox(
+              width: 96,
+              child: Center(
+                child: Rosette(
+                  style: styleForAchievement(r.achievement, size: 76),
+                  label: r.achievement.title.length <= 4
+                      ? r.achievement.title
+                      : null,
+                  dimmed: !r.isUnlocked,
                 ),
-                child:
-                    const Icon(Icons.emoji_events, color: Colors.white, size: 30),
-              )
-            else
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: cs.surfaceContainerHighest,
-                ),
-                child: Icon(Icons.hourglass_bottom, color: cs.onSurface, size: 26),
               ),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -278,8 +268,8 @@ class AchievementDetailPage extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: Row(
             children: [
-              const Text('🎀', style: TextStyle(fontSize: 16)),
-              const SizedBox(width: 10),
+              FlatRibbon.forQ(q, height: 26),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   DateFormat.yMMMd().format(q.date),
@@ -387,9 +377,9 @@ class _ChainPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (unlocked)
-            const Padding(
-              padding: EdgeInsets.only(right: 4),
-              child: Icon(Icons.emoji_events, size: 14, color: Color(0xFF7B4D00)),
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Icon(Icons.check, size: 13, color: fg),
             ),
           Text(
             title.title,

@@ -6,6 +6,7 @@ import '../convo/add_q.dart';
 import '../models/dog.dart';
 import '../models/q.dart';
 import '../repo/repo.dart';
+import 'widgets/ribbons.dart';
 
 class DogProfilePage extends StatelessWidget {
   const DogProfilePage({super.key, required this.repo, required this.dogId});
@@ -224,8 +225,8 @@ class _QRow extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
           child: Row(
             children: [
-              const Text('🎀', style: TextStyle(fontSize: 18)),
-              const SizedBox(width: 10),
+              FlatRibbon.forQ(q, height: 28),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

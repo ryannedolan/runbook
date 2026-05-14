@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../models/q.dart';
-import '../rules/achievement.dart';
 import 'feed_items.dart';
+import 'widgets/ribbons.dart';
 
 enum CardSize { pinned, feed }
 
@@ -48,8 +48,19 @@ class AchievementCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _trophy(context, r),
-              const SizedBox(width: 12),
+              SizedBox(
+                width: 56,
+                child: Center(
+                  child: Rosette(
+                    style: styleForAchievement(r.achievement, size: 40),
+                    label: r.achievement.title.length <= 4
+                        ? r.achievement.title
+                        : null,
+                    dimmed: !r.isUnlocked,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,34 +122,6 @@ class AchievementCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _trophy(BuildContext context, AchievementResult r) {
-    final cs = Theme.of(context).colorScheme;
-    if (r.isUnlocked) {
-      return Container(
-        width: 44,
-        height: 44,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFFFD86A), Color(0xFFE3A100)],
-          ),
-        ),
-        child: const Icon(Icons.emoji_events, color: Colors.white, size: 24),
-      );
-    }
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: cs.surfaceContainerHighest,
-      ),
-      child: Icon(Icons.hourglass_bottom, color: cs.onSurface, size: 22),
     );
   }
 
@@ -212,51 +195,38 @@ class _PinnedAchievementCard extends StatelessWidget {
 
   Widget _unlocked(BuildContext context, ColorScheme cs) {
     final r = item.result;
-    // Strong gold visual once earned.
     return Container(
-      width: 116,
+      width: 132,
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFFFE9A8), Color(0xFFFFC861)],
-        ),
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFE3A100).withValues(alpha: 0.4),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Icon(Icons.emoji_events, size: 18, color: Color(0xFF7B4D00)),
-              Text(
-                item.dog.callName,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFF7B4D00),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          Rosette(
+            style: styleForAchievement(r.achievement, size: 56),
+            label: r.achievement.title.length <= 4 ? r.achievement.title : null,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             r.achievement.title,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 15,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF5A3500),
               letterSpacing: 0.3,
             ),
+          ),
+          Text(
+            item.dog.callName,
+            style: TextStyle(
+              fontSize: 11,
+              color: cs.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -266,7 +236,7 @@ class _PinnedAchievementCard extends StatelessWidget {
   Widget _inProgress(BuildContext context, ColorScheme cs) {
     final r = item.result;
     return Container(
-      width: 130,
+      width: 132,
       padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
@@ -274,31 +244,28 @@ class _PinnedAchievementCard extends StatelessWidget {
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              Icon(Icons.hourglass_bottom, size: 14, color: cs.onSurfaceVariant),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  item.dog.callName,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: cs.onSurfaceVariant,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+          Rosette(
+            style: styleForAchievement(r.achievement, size: 44),
+            label: r.achievement.title.length <= 4 ? r.achievement.title : null,
+            dimmed: true,
           ),
           const SizedBox(height: 4),
           Text(
             r.achievement.title,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
+          ),
+          Text(
+            item.dog.callName,
+            style: TextStyle(
+              fontSize: 11,
+              color: cs.onSurfaceVariant,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 6),
           ClipRRect(
@@ -338,30 +305,35 @@ class QRibbon extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEAF8EC),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFB7DFB9)),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🎀', style: TextStyle(fontSize: 14)),
-            const SizedBox(width: 4),
-            Text(
-              '$levelLabel${q.agilityClass.short}$divLabel',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: cs.onSurface,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              DateFormat.Md().format(q.date),
-              style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant),
+            FlatRibbon.forQ(q, height: 28),
+            const SizedBox(width: 6),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$levelLabel${q.agilityClass.short}$divLabel',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                    height: 1.1,
+                  ),
+                ),
+                Text(
+                  DateFormat.Md().format(q.date),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: cs.onSurfaceVariant,
+                    height: 1.1,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
