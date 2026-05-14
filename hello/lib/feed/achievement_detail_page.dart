@@ -9,7 +9,7 @@ import '../rules/akc_agility.dart';
 import '../rules/engine.dart';
 import 'dog_profile_page.dart';
 import 'feed_items.dart';
-import 'widgets/pixel_icons.dart';
+import 'widgets/icon_chiclet.dart';
 
 class AchievementDetailPage extends StatelessWidget {
   const AchievementDetailPage({
@@ -82,15 +82,10 @@ class AchievementDetailPage extends StatelessWidget {
       children: [
         Row(
           children: [
-            SizedBox(
-              width: 104,
-              child: Center(
-                child: PixelRosette.forAchievement(
-                  r.achievement,
-                  scale: 4,
-                  dimmed: !r.isUnlocked,
-                ),
-              ),
+            TitleChiclet(
+              achievement: r.achievement,
+              size: 88,
+              dimmed: !r.isUnlocked,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -266,7 +261,7 @@ class AchievementDetailPage extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: Row(
             children: [
-              PixelQRibbonPair(q: q, scale: 2),
+              QRibbonChiclet(q: q, size: 28),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -294,7 +289,10 @@ class AchievementDetailPage extends StatelessWidget {
     final withYps = contributing.where((q) => q.yps != null).toList();
     final a = r.achievement;
     final isChampion = a is ChampionTitle;
-    if (contributing.isEmpty && !isChampion) return const SizedBox.shrink();
+    final isNAC = a is NACQualificationTitle;
+    if (contributing.isEmpty && !isChampion && !isNAC) {
+      return const SizedBox.shrink();
+    }
 
     final tiles = <Widget>[];
     if (withTimes.isNotEmpty) {
@@ -316,6 +314,17 @@ class AchievementDetailPage extends StatelessWidget {
       tiles.add(_StatTile(
         label: 'Double Qs',
         value: '${live.dqs} / ${a.doubleQsNeeded}',
+      ));
+    }
+    if (a is NACQualificationTitle) {
+      final live = a.liveCounts(qs);
+      tiles.add(_StatTile(
+        label: 'MACH points (window)',
+        value: '${live.points} / ${a.pointsNeeded}',
+      ));
+      tiles.add(_StatTile(
+        label: 'QQs (window)',
+        value: '${live.qqs} / ${a.qqsNeeded}',
       ));
     }
     if (tiles.isEmpty) return const SizedBox.shrink();

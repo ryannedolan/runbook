@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../convo/add_dog.dart';
-import '../convo/add_event.dart';
 import '../convo/add_q.dart';
 import '../models/dog.dart';
 import '../models/q.dart';
@@ -30,17 +29,13 @@ class FeedPage extends StatelessWidget {
         final timeline = <FeedItem>[];
         for (final dog in dogs) {
           final qs = repo.qsForDog(dog.id);
-          final events = repo.eventsForDog(dog.id);
-          if (qs.isEmpty && events.isEmpty) continue;
+          if (qs.isEmpty) continue;
           final results = engine.evaluate(qs);
           for (final r in results) {
             timeline.add(AchievementFeedItem(dog: dog, result: r, allQs: qs));
           }
           for (final q in qs) {
             timeline.add(QFeedItem(dog: dog, q: q));
-          }
-          for (final ev in events) {
-            timeline.add(EventFeedItem(dog: dog, event: ev));
           }
           timeline.addAll(
               buildTipsForDog(dog: dog, qs: qs, results: results, repo: repo));
@@ -56,11 +51,6 @@ class FeedPage extends StatelessWidget {
             title: const Text('Runbook'),
             backgroundColor: cs.inversePrimary,
             actions: [
-              IconButton(
-                tooltip: 'Log an event',
-                icon: const Icon(Icons.emoji_events_outlined),
-                onPressed: () => _onLogEvent(context),
-              ),
               IconButton(
                 tooltip: 'Q history',
                 icon: const Icon(Icons.search),
@@ -195,18 +185,6 @@ class FeedPage extends StatelessWidget {
           ),
         ));
         i++;
-      } else if (item is EventFeedItem) {
-        widgets.add(Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: EventCard(
-            item: item,
-            isPinned: repo.isPinned(item.cardId),
-            onTogglePin: () => repo.togglePin(item.cardId),
-            onOpen: () => _onEditEvent(context, item),
-            onDogTap: () => _onDogTap(context, item.dog),
-          ),
-        ));
-        i++;
       } else if (item is AnalyticsFeedItem) {
         widgets.add(Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -268,18 +246,6 @@ class FeedPage extends StatelessWidget {
         ),
       );
     }
-    if (item is EventFeedItem) {
-      return SizedBox(
-        width: 260,
-        child: EventCard(
-          item: item,
-          isPinned: true,
-          onTogglePin: () => repo.togglePin(item.cardId),
-          onOpen: () => _onEditEvent(context, item),
-          onDogTap: () => _onDogTap(context, item.dog),
-        ),
-      );
-    }
     if (item is TipFeedItem) {
       return SizedBox(
         width: 220,
@@ -305,10 +271,9 @@ class FeedPage extends StatelessWidget {
     // On tie: achievements first, then tips, then Q ribbons.
     int rank(FeedItem f) {
       if (f is AchievementFeedItem) return 0;
-      if (f is EventFeedItem) return 1;
-      if (f is TipFeedItem) return 2;
-      if (f is AnalyticsFeedItem) return 3;
-      return 4;
+      if (f is TipFeedItem) return 1;
+      if (f is AnalyticsFeedItem) return 2;
+      return 3;
     }
 
     return rank(a).compareTo(rank(b));
@@ -381,27 +346,6 @@ class FeedPage extends StatelessWidget {
     );
   }
 
-  Future<void> _onLogEvent(BuildContext context) async {
-    final saved = await Navigator.of(context).push<int>(
-      MaterialPageRoute(builder: (_) => AddEventPage(repo: repo)),
-    );
-    if (saved != null && saved > 0 && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Event logged'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
-  Future<void> _onEditEvent(BuildContext context, EventFeedItem item) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => AddEventPage(repo: repo, editing: item.event),
-      ),
-    );
-  }
 
   void _onDogTap(BuildContext context, Dog dog) {
     Navigator.of(context).push(

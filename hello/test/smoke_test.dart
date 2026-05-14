@@ -61,10 +61,10 @@ void main() {
     final repo = await Repo.open();
     await repo.seedSampleData();
     await tester.pumpWidget(MaterialApp(home: FeedPage(repo: repo)));
-    // Three Novice STD Qs in seed data → NA title earned. The rosette
-    // also renders the title text inside, so "NA" appears twice.
-    expect(find.text('NA'), findsNWidgets(2));
-    expect(find.text('NAJ'), findsNWidgets(2));
+    // Three Novice STD Qs in seed data → NA title earned. Chiclets carry
+    // an icon, not embedded text, so each title text appears exactly once.
+    expect(find.text('NA'), findsOneWidget);
+    expect(find.text('NAJ'), findsOneWidget);
     // FAB
     expect(find.text('Log a Q'), findsOneWidget);
   });

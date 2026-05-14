@@ -5,7 +5,7 @@ import '../convo/add_q.dart';
 import '../models/dog.dart';
 import '../models/q.dart';
 import '../repo/repo.dart';
-import 'widgets/pixel_icons.dart';
+import 'widgets/icon_chiclet.dart';
 
 /// Cross-dog searchable / filterable Q history.
 class QHistoryPage extends StatefulWidget {
@@ -288,7 +288,7 @@ class _QHistoryTile extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
           child: Row(
             children: [
-              PixelQRibbonPair(q: q, scale: 2),
+              QRibbonChiclet(q: q, size: 32),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

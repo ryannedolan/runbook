@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/dog.dart';
-import '../models/event.dart';
 import '../models/q.dart';
 
 class Repo extends ChangeNotifier {
@@ -13,14 +12,12 @@ class Repo extends ChangeNotifier {
 
   static const _kDogs = 'runbook.dogs';
   static const _kQs = 'runbook.qs';
-  static const _kEvents = 'runbook.events';
   static const _kPinned = 'runbook.pinnedCards';
   static const _kCollectedRibbons = 'runbook.collectedRibbons';
 
   final SharedPreferences _prefs;
   final List<Dog> _dogs = [];
   final List<Q> _qs = [];
-  final List<Event> _events = [];
   final Set<String> _pinned = {};
   final Set<String> _collectedRibbons = {};
 
@@ -45,13 +42,6 @@ class Repo extends ChangeNotifier {
       _qs
         ..clear()
         ..addAll(list.map((j) => Q.fromJson(j as Map<String, dynamic>)));
-    }
-    final eventsJson = _prefs.getString(_kEvents);
-    if (eventsJson != null) {
-      final list = jsonDecode(eventsJson) as List<dynamic>;
-      _events
-        ..clear()
-        ..addAll(list.map((j) => Event.fromJson(j as Map<String, dynamic>)));
     }
     final pinnedJson = _prefs.getString(_kPinned);
     if (pinnedJson != null) {
@@ -118,9 +108,6 @@ class Repo extends ChangeNotifier {
   Future<void> _saveQs() async =>
       _prefs.setString(_kQs, jsonEncode(_qs.map((q) => q.toJson()).toList()));
 
-  Future<void> _saveEvents() async => _prefs.setString(
-      _kEvents, jsonEncode(_events.map((e) => e.toJson()).toList()));
-
   Future<void> _savePinned() async =>
       _prefs.setString(_kPinned, jsonEncode(_pinned.toList()));
 
@@ -129,7 +116,6 @@ class Repo extends ChangeNotifier {
 
   List<Dog> get dogs => List.unmodifiable(_dogs);
   List<Q> get qs => List.unmodifiable(_qs);
-  List<Event> get events => List.unmodifiable(_events);
   Set<String> get pinnedCards => Set.unmodifiable(_pinned);
 
   Dog? dogById(String id) {
@@ -199,10 +185,8 @@ class Repo extends ChangeNotifier {
   Future<void> deleteDog(String id) async {
     _dogs.removeWhere((d) => d.id == id);
     _qs.removeWhere((q) => q.dogId == id);
-    _events.removeWhere((e) => e.dogId == id);
     await _saveDogs();
     await _saveQs();
-    await _saveEvents();
     notifyListeners();
   }
 
@@ -223,29 +207,6 @@ class Repo extends ChangeNotifier {
   Future<void> deleteQ(String id) async {
     _qs.removeWhere((q) => q.id == id);
     await _saveQs();
-    notifyListeners();
-  }
-
-  List<Event> eventsForDog(String dogId) =>
-      _events.where((e) => e.dogId == dogId).toList(growable: false);
-
-  Future<void> addEvent(Event e) async {
-    _events.add(e);
-    await _saveEvents();
-    notifyListeners();
-  }
-
-  Future<void> updateEvent(Event e) async {
-    final i = _events.indexWhere((x) => x.id == e.id);
-    if (i < 0) return;
-    _events[i] = e;
-    await _saveEvents();
-    notifyListeners();
-  }
-
-  Future<void> deleteEvent(String id) async {
-    _events.removeWhere((e) => e.id == id);
-    await _saveEvents();
     notifyListeners();
   }
 

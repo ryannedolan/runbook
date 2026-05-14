@@ -1,5 +1,4 @@
 import '../models/dog.dart';
-import '../models/event.dart';
 import '../models/q.dart';
 import '../rules/achievement.dart';
 
@@ -34,17 +33,6 @@ class AchievementFeedItem extends FeedItem {
     }
     return latest == DateTime(1900) ? DateTime.now() : latest;
   }
-}
-
-class EventFeedItem extends FeedItem {
-  EventFeedItem({required this.dog, required this.event});
-  final Dog dog;
-  final Event event;
-
-  @override
-  String get cardId => 'event::${event.id}';
-  @override
-  DateTime get sortTimestamp => event.date;
 }
 
 class QFeedItem extends FeedItem {

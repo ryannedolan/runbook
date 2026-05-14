@@ -221,6 +221,42 @@ void main() {
       expect(results.where((r) => r.achievement.id == 'akc.fast.nf'), isEmpty);
     });
 
+    test('NAC qualifies on 4 QQs + 400 MACH points in window', () {
+      final year = DateTime.now().year;
+      // Build 4 calendar days each with a Master Std and a Master JWW Q,
+      // total MACH points >= 400.
+      final qs = <Q>[];
+      for (var i = 0; i < 4; i++) {
+        final d = DateTime(year, 5, 1 + i);
+        qs.add(Q.create(
+          dogId: 'dog1',
+          date: d,
+          agilityClass: AgilityClass.standard,
+          level: AgilityLevel.master,
+          machPoints: 60,
+        ));
+        qs.add(Q.create(
+          dogId: 'dog1',
+          date: d,
+          agilityClass: AgilityClass.jww,
+          level: AgilityLevel.master,
+          machPoints: 60,
+        ));
+      }
+      // Top up points past 400 with a 5th solo Master Std Q.
+      qs.add(Q.create(
+        dogId: 'dog1',
+        date: DateTime(year, 6, 1),
+        agilityClass: AgilityClass.standard,
+        level: AgilityLevel.master,
+        machPoints: 30,
+      ));
+      final results = RulesEngine().evaluate(qs);
+      final nac = results.firstWhere(
+          (r) => r.achievement.id == 'akc.nac.$year');
+      expect(nac.isUnlocked, isTrue);
+    });
+
     test('T2B chain: 15 Master T2B Qs unlocks T2B title', () {
       final qs = [
         for (var i = 0; i < 15; i++)

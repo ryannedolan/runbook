@@ -200,6 +200,21 @@ final premierJwwChain = TitleProgression(
   ],
 );
 
+/// NAC qualification chain — one achievement per recent qualification year.
+/// Each achievement evaluates its own window (Sep–Aug). Future years
+/// remain in-progress until the dog qualifies; old years stay unlocked.
+List<NACQualificationTitle> _nacTitles() {
+  final thisYear = DateTime.now().year;
+  // Surface the prior year (so we don't lose freshly-finished seasons),
+  // this year, and next year.
+  return [
+    for (var y = thisYear - 1; y <= thisYear + 1; y++)
+      NACQualificationTitle(qualificationYear: y),
+  ];
+}
+
+final nacChain = TitleProgression(name: 'NAC', titles: _nacTitles());
+
 /// MACH chain — MACH, MACH2, MACH3 (regular Master).
 final machChain = TitleProgression(
   name: 'MACH',
@@ -239,6 +254,7 @@ final allAkcChains = <TitleProgression>[
   regularStandardChain,
   regularJwwChain,
   machChain,
+  nacChain,
   regularFastChain,
   t2bChain,
   preferredStandardChain,
@@ -313,7 +329,12 @@ RuleNode akcAgilityTree() => RuleNode.group(
                   q.agilityClass == AgilityClass.jww)),
           child: RuleNode.group(
             title: 'MACH',
-            children: [for (final t in machChain.titles) RuleNode.leaf(t)],
+            children: [
+              for (final t in machChain.titles) RuleNode.leaf(t),
+              // NAC qualification reuses the same MACH-points + QQ
+              // machinery, gated alongside.
+              for (final t in nacChain.titles) RuleNode.leaf(t),
+            ],
           ),
         ),
 

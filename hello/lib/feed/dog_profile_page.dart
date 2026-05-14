@@ -6,7 +6,7 @@ import '../convo/add_q.dart';
 import '../models/dog.dart';
 import '../models/q.dart';
 import '../repo/repo.dart';
-import 'widgets/pixel_icons.dart';
+import 'widgets/icon_chiclet.dart';
 
 class DogProfilePage extends StatelessWidget {
   const DogProfilePage({super.key, required this.repo, required this.dogId});
@@ -225,7 +225,7 @@ class _QRow extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
           child: Row(
             children: [
-              PixelQRibbonPair(q: q, scale: 2),
+              QRibbonChiclet(q: q, size: 32),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

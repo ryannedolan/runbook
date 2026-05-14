@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../models/dog.dart';
-import '../models/event.dart';
 import '../models/q.dart';
 import 'feed_items.dart';
-import 'widgets/pixel_icons.dart';
+import 'widgets/icon_chiclet.dart';
 
 enum CardSize { pinned, feed }
 
@@ -51,17 +50,12 @@ class AchievementCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                width: 56,
-                child: Center(
-                  child: PixelRosette.forAchievement(
-                    r.achievement,
-                    scale: 2,
-                    dimmed: !r.isUnlocked,
-                  ),
-                ),
+              TitleChiclet(
+                achievement: r.achievement,
+                size: 48,
+                dimmed: !r.isUnlocked,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,8 +205,8 @@ class _PinnedAchievementCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          PixelRosette.forAchievement(r.achievement, scale: 3),
-          const SizedBox(height: 4),
+          TitleChiclet(achievement: r.achievement, size: 56),
+          const SizedBox(height: 6),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -257,8 +251,8 @@ class _PinnedAchievementCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          PixelRosette.forAchievement(r.achievement, scale: 2, dimmed: true),
-          const SizedBox(height: 4),
+          TitleChiclet(achievement: r.achievement, size: 48, dimmed: true),
+          const SizedBox(height: 6),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -326,7 +320,7 @@ class QRibbon extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            PixelQRibbonPair(q: q, scale: 2),
+            QRibbonChiclet(q: q, size: 24),
             const SizedBox(width: 6),
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -510,165 +504,6 @@ class _PreferredBadge extends StatelessWidget {
   }
 }
 
-/// A card for a major event — National Agility Championship, Westminster
-/// Masters, etc. Distinct from a regular Q because the event itself
-/// is the headline, not the score.
-class EventCard extends StatelessWidget {
-  const EventCard({
-    super.key,
-    required this.item,
-    required this.isPinned,
-    required this.onTogglePin,
-    required this.onOpen,
-    required this.onDogTap,
-  });
-
-  final EventFeedItem item;
-  final bool isPinned;
-  final VoidCallback onTogglePin;
-  final VoidCallback onOpen;
-  final VoidCallback onDogTap;
-
-  Color _accent(BuildContext context) {
-    final r = item.event.result;
-    if (r == EventResult.champion) return const Color(0xFFE6C547); // gold
-    if (r == EventResult.reservePlace) return const Color(0xFFB87333); // bronze
-    if (r == EventResult.place1st) return const Color(0xFF1F4FA8); // blue
-    if (r == EventResult.place2nd) return const Color(0xFFB30E2A); // red
-    if (r == EventResult.place3rd) return const Color(0xFFE5BA00); // yellow
-    return Theme.of(context).colorScheme.primary;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final ev = item.event;
-    final accent = _accent(context);
-    return Card(
-      elevation: 0,
-      color: cs.surfaceContainerLow,
-      child: InkWell(
-        onTap: onOpen,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border(
-              left: BorderSide(color: accent, width: 4),
-            ),
-          ),
-          padding: const EdgeInsets.fromLTRB(12, 12, 8, 14),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.emoji_events, color: accent, size: 26),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            ev.shortLabel,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        InkWell(
-                          onTap: onDogTap,
-                          borderRadius: BorderRadius.circular(4),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 2),
-                            child: Text(
-                              item.dog.callName,
-                              style: TextStyle(
-                                color: cs.primary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                decoration: TextDecoration.underline,
-                                decorationColor:
-                                    cs.primary.withValues(alpha: 0.4),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      ev.displayName,
-                      style: TextStyle(
-                        color: cs.onSurfaceVariant,
-                        fontSize: 12,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        if (ev.result != null) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: accent.withValues(alpha: 0.20),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              ev.result!.label,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: accent,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                        Text(
-                          DateFormat.yMMMd().format(ev.date),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: cs.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                tooltip: isPinned ? 'Unpin' : 'Pin',
-                icon: Icon(
-                  isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                  size: 20,
-                  color: isPinned ? cs.primary : cs.onSurface.withValues(alpha: 0.5),
-                ),
-                onPressed: onTogglePin,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 /// A small analytics card — personal best, top-3 average, or trend.
 class AnalyticsCard extends StatelessWidget {
@@ -685,10 +520,10 @@ class AnalyticsCard extends StatelessWidget {
   final VoidCallback onTogglePin;
   final VoidCallback onDogTap;
 
-  IconData get _icon => switch (item.kind) {
-        AnalyticsKind.personalBest => Icons.emoji_events_outlined,
-        AnalyticsKind.topAverage => Icons.stacked_bar_chart_outlined,
-        AnalyticsKind.trend => Icons.trending_down,
+  AnalyticsChicletKind get _chicletKind => switch (item.kind) {
+        AnalyticsKind.personalBest => AnalyticsChicletKind.personalBest,
+        AnalyticsKind.topAverage => AnalyticsChicletKind.topAverage,
+        AnalyticsKind.trend => AnalyticsChicletKind.trend,
       };
 
   @override
@@ -702,16 +537,7 @@ class AnalyticsCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: cs.secondary.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(_icon, size: 24, color: cs.onSecondaryContainer),
-            ),
+            AnalyticsChiclet(kind: _chicletKind, size: 48),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
