@@ -1,7 +1,14 @@
 import 'package:uuid/uuid.dart';
 
 /// AKC agility classes we currently model. Easy to extend.
-enum AgilityClass { standard, jww, fast, t2b }
+enum AgilityClass {
+  standard,
+  jww,
+  fast,
+  t2b,
+  premierStandard,
+  premierJww,
+}
 
 extension AgilityClassX on AgilityClass {
   String get label => switch (this) {
@@ -9,6 +16,8 @@ extension AgilityClassX on AgilityClass {
     AgilityClass.jww => 'JWW',
     AgilityClass.fast => 'FAST',
     AgilityClass.t2b => 'T2B',
+    AgilityClass.premierStandard => 'Premier Standard',
+    AgilityClass.premierJww => 'Premier JWW',
   };
 
   String get short => switch (this) {
@@ -16,7 +25,14 @@ extension AgilityClassX on AgilityClass {
     AgilityClass.jww => 'JWW',
     AgilityClass.fast => 'FAST',
     AgilityClass.t2b => 'T2B',
+    AgilityClass.premierStandard => 'PSTD',
+    AgilityClass.premierJww => 'PJWW',
   };
+
+  /// Premier classes are only run at Master level.
+  bool get isPremier =>
+      this == AgilityClass.premierStandard ||
+      this == AgilityClass.premierJww;
 }
 
 enum AgilityLevel { novice, open, excellent, master }
@@ -46,6 +62,8 @@ class Q {
     required this.date,
     required this.agilityClass,
     required this.level,
+    this.preferred = false,
+    this.yards,
     this.score,
     this.timeSeconds,
     this.machPoints = 0,
@@ -57,8 +75,19 @@ class Q {
   final DateTime date;
   final AgilityClass agilityClass;
   final AgilityLevel level;
+
+  /// True if this Q was earned in the Preferred division. Preferred
+  /// titles use parallel name schemes (NAP, MXP, PAX, ...). Premier
+  /// classes do not have a Preferred division — preferred is always
+  /// false when [agilityClass.isPremier] is true.
+  final bool preferred;
+
+  final double? yards;
   final int? score;
   final double? timeSeconds;
+
+  /// MACH/PACH championship points. Counts toward MACH (regular Master)
+  /// or PAX (Preferred Master) depending on [preferred].
   final int machPoints;
   final String? notes;
 
@@ -67,6 +96,8 @@ class Q {
     required DateTime date,
     required AgilityClass agilityClass,
     required AgilityLevel level,
+    bool preferred = false,
+    double? yards,
     int? score,
     double? timeSeconds,
     int machPoints = 0,
@@ -78,6 +109,8 @@ class Q {
       date: date,
       agilityClass: agilityClass,
       level: level,
+      preferred: preferred,
+      yards: yards,
       score: score,
       timeSeconds: timeSeconds,
       machPoints: machPoints,
@@ -87,10 +120,20 @@ class Q {
 
   String get sport => 'AKC Agility';
 
+  /// "YPS" — yards per second. Null when either yards or time is unknown.
+  double? get yps {
+    final y = yards;
+    final t = timeSeconds;
+    if (y == null || t == null || t <= 0) return null;
+    return y / t;
+  }
+
   Q copyWith({
     DateTime? date,
     AgilityClass? agilityClass,
     AgilityLevel? level,
+    bool? preferred,
+    double? yards,
     int? score,
     double? timeSeconds,
     int? machPoints,
@@ -101,6 +144,8 @@ class Q {
     date: date ?? this.date,
     agilityClass: agilityClass ?? this.agilityClass,
     level: level ?? this.level,
+    preferred: preferred ?? this.preferred,
+    yards: yards ?? this.yards,
     score: score ?? this.score,
     timeSeconds: timeSeconds ?? this.timeSeconds,
     machPoints: machPoints ?? this.machPoints,
@@ -113,6 +158,8 @@ class Q {
     'date': date.toIso8601String(),
     'agilityClass': agilityClass.name,
     'level': level.name,
+    if (preferred) 'preferred': true,
+    if (yards != null) 'yards': yards,
     if (score != null) 'score': score,
     if (timeSeconds != null) 'timeSeconds': timeSeconds,
     if (machPoints != 0) 'machPoints': machPoints,
@@ -125,6 +172,8 @@ class Q {
     date: DateTime.parse(json['date'] as String),
     agilityClass: AgilityClass.values.byName(json['agilityClass'] as String),
     level: AgilityLevel.values.byName(json['level'] as String),
+    preferred: json['preferred'] as bool? ?? false,
+    yards: (json['yards'] as num?)?.toDouble(),
     score: (json['score'] as num?)?.toInt(),
     timeSeconds: (json['timeSeconds'] as num?)?.toDouble(),
     machPoints: (json['machPoints'] as num?)?.toInt() ?? 0,

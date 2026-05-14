@@ -61,21 +61,24 @@ Unit tests should be extensive, testing things like "when a dog earns a Excellen
 
 ## Status (2026-05-13 MVP)
 
-First end-to-end pass built inside `hello/` (pubspec renamed `runbook`).
+Iteration 1 — first end-to-end pass:
+- Dog/Q models, SharedPreferences-backed repo, AKC agility rules engine (gated tree), conversational UI framework, feed with pinned + scrolling cards.
 
-Done:
-- `models/` Dog and Q (Q hard-coded to AKC agility: class, level, date, MACH points).
-- `repo/repo.dart` SharedPreferences-backed `ChangeNotifier` repo (CRUD + pin/unpin + seed).
-- `rules/` Achievement framework + AKC agility tree (NA/OA/AX/MX, NAJ/OAJ/AXJ/MXJ, MACH gated).
-   - Implication rule: a higher-level Q unlocks all prior-level titles in the same class, anchored at the higher Q's date.
-- `convo/` Conversational UI framework (scrolling thread, tap-to-rewind, choice/text/number/date inputs).
-- `convo/add_dog.dart`, `convo/add_q.dart` — add-dog and add-Q flows; add-Q supports add-another and inline "+ new dog".
-- `feed/` Feed page with pinned (wrap layout) + scrolling unpinned cards, FAB to log a Q, empty state.
-- Tests: 8 rules tests + 2 smoke tests — all passing.
+Iteration 2 — UX + content expansion:
+- Add-dog: explicit "Save / Start over" confirmation step (wife was logging dogs 3x because completion wasn't obvious); upsert by call-name (case-insensitive).
+- Data model: `Q.preferred` (bool), AgilityClass `premierStandard`/`premierJww`, `Q.yards` / YPS.
+- Rules engine: refactored into `TitleProgression` chains (Standard / JWW / Preferred Std / Preferred JWW / Premier Std / Premier JWW / MACH 1-3 / PAX 1-3). LevelQCountTitle handles preferred; PremierCountTitle for PAD/PJD; ChampionTitle parameterized for MACH/MACH2/.../PAX/PAX2/...
+- Add-Q convo: asks Regular/Preferred, skips Preferred+level for Premier classes (always Master), edit-existing-Q mode.
+- Dog profile page: info, Q list, edit/delete dog, edit/delete each Q.
+- Feed: timeline interleaves Q ribbon rows (clustering adjacent Qs into a wrap of pill-ribbons) with achievement cards. Achievement card dog-name is tappable → dog profile.
+- Tip cards: "Don't forget your X ribbon!" after each direct unlock; "One more Q until X!" at have == need-1.
+- Achievement detail page: full-page with progress bar, chain pills (e.g., NAJ → OAJ → AXJ → MXJ → MJB → ...), contributing Qs (each tap → edit), derived stats (avg time, avg YPS, live MACH/PACH points + double Qs for champion titles).
+- Pinned card revamp: in-progress = compact progress card with bar + count; unlocked = strong gold gradient with trophy + dog name.
+- Tests: 14 (8 original + Preferred chain + Premier + Master tiers).
 
-Not yet done (deferred):
+Still deferred:
 - More sports (only AKC agility today).
-- Edit a Q (only delete via Recent Q card — and the Recent Q card itself isn't wired into the feed yet).
-- Notes-of-encouragement / report cards in the feed (only titles for now).
-- Expanded "activity" view (currently a modal bottom sheet).
+- Stacking ribbons (alternative to flow layout).
+- Mark-as-collected for "pickup your ribbon" tips.
+- Richer Q metadata collection in the convo (yards / time / score) — model supports it, convo doesn't ask for it yet.
 

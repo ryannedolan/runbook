@@ -6,12 +6,19 @@ import '../repo/repo.dart';
 import 'add_dog.dart';
 import 'convo.dart';
 
-/// Conversation that adds Qs. Allows adding multiple in a row without
-/// restarting from scratch.
+/// Conversation that adds (or edits) Qs. When `editing` is non-null we
+/// only allow one save and then pop. When adding fresh, we support
+/// adding multiple Qs in a row without restarting.
 class AddQPage extends StatefulWidget {
-  const AddQPage({super.key, required this.repo, this.preselectedDogId});
+  const AddQPage({
+    super.key,
+    required this.repo,
+    this.preselectedDogId,
+    this.editing,
+  });
   final Repo repo;
   final String? preselectedDogId;
+  final Q? editing;
 
   @override
   State<AddQPage> createState() => _AddQPageState();
@@ -21,17 +28,40 @@ class _AddQPageState extends State<AddQPage> {
   late final ConvoController _ctrl;
   int _savedCount = 0;
 
+  bool get _isEditing => widget.editing != null;
+
   @override
   void initState() {
     super.initState();
     _ctrl = ConvoController(next: _nextStep, onComplete: _complete);
-    if (widget.preselectedDogId != null) {
-      // Auto-answer the dog step. We do this after the first frame so the
-      // ConvoView is ready.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _ctrl.answer(widget.preselectedDogId, context);
-      });
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final q = widget.editing;
+      if (q != null) {
+        await _ctrl.answer(q.dogId, context);
+        if (!mounted) return;
+        await _ctrl.answer(q.agilityClass, context);
+        if (!mounted) return;
+        if (!q.agilityClass.isPremier) {
+          await _ctrl.answer(q.preferred, context);
+          if (!mounted) return;
+          await _ctrl.answer(q.level, context);
+          if (!mounted) return;
+        }
+        await _ctrl.answer(q.date, context);
+        if (!mounted) return;
+        if (_acceptsMachPoints(q.agilityClass, q.level, q.preferred)) {
+          await _ctrl.answer(q.machPoints, context);
+        }
+      } else if (widget.preselectedDogId != null) {
+        await _ctrl.answer(widget.preselectedDogId, context);
+      }
+    });
+  }
+
+  static bool _acceptsMachPoints(AgilityClass cls, AgilityLevel level, bool preferred) {
+    if (level != AgilityLevel.master) return false;
+    if (cls.isPremier) return false;
+    return cls == AgilityClass.standard || cls == AgilityClass.jww;
   }
 
   ConvoStep? _nextStep(Map<String, Object?> a) {
@@ -41,10 +71,10 @@ class _AddQPageState extends State<AddQPage> {
         label: dogs.isEmpty ? 'Add a dog' : 'New dog',
         icon: Icons.add,
         run: (ctx, onAnswer) async {
-          final dog = await Navigator.of(ctx).push<Dog>(
+          final result = await Navigator.of(ctx).push<({Dog dog, bool merged})>(
             MaterialPageRoute(builder: (_) => AddDogPage(repo: widget.repo)),
           );
-          if (dog != null) onAnswer(dog.id);
+          if (result != null) onAnswer(result.dog.id);
         },
       );
       if (dogs.isEmpty) {
@@ -77,7 +107,20 @@ class _AddQPageState extends State<AddQPage> {
         ]),
       );
     }
-    if (!a.containsKey('level')) {
+    final cls = a['agilityClass'] as AgilityClass;
+    // Premier is always regular Master — skip the preferred + level
+    // questions in that case.
+    if (!cls.isPremier && !a.containsKey('preferred')) {
+      return ConvoStep(
+        key: 'preferred',
+        prompt: 'Regular or Preferred?',
+        input: ChoiceInput<bool>([
+          Choice('Regular', false),
+          Choice('Preferred', true),
+        ]),
+      );
+    }
+    if (!cls.isPremier && !a.containsKey('level')) {
       return ConvoStep(
         key: 'level',
         prompt: 'Which level?',
@@ -93,13 +136,29 @@ class _AddQPageState extends State<AddQPage> {
         input: DateInputStep(initial: DateTime.now()),
       );
     }
-    // MACH points only apply at master level; skip otherwise.
-    if (a['level'] == AgilityLevel.master && !a.containsKey('machPoints')) {
+    final level = (cls.isPremier ? AgilityLevel.master : a['level']) as AgilityLevel;
+    final preferred = (cls.isPremier ? false : a['preferred']) as bool;
+    if (_acceptsMachPoints(cls, level, preferred) &&
+        !a.containsKey('machPoints')) {
+      final label = preferred ? 'PACH' : 'MACH';
       return ConvoStep(
         key: 'machPoints',
-        prompt: 'MACH points earned? (optional)',
+        prompt: '$label points earned? (optional)',
         input: NumberInputStep(hint: 'e.g. 24'),
       );
+    }
+    if (_isEditing) {
+      if (!a.containsKey('saveEdit')) {
+        return ConvoStep(
+          key: 'saveEdit',
+          prompt: 'Save changes?',
+          input: ChoiceInput<String>([
+            Choice('Save changes', 'save'),
+            Choice('Discard', 'cancel'),
+          ]),
+        );
+      }
+      return null;
     }
     if (!a.containsKey('addAnother')) {
       final dog = widget.repo.dogById(a['dog'] as String);
@@ -107,11 +166,11 @@ class _AddQPageState extends State<AddQPage> {
       return ConvoStep(
         key: 'addAnother',
         prompt: _savedCount == 0
-            ? 'Want to add another Q for $name?'
+            ? 'Save this Q?'
             : 'Saved! Add another Q for $name?',
         input: ChoiceInput<bool>([
-          Choice('Yes, another', true),
-          Choice('All done', false),
+          Choice(_savedCount == 0 ? 'Save & log another' : 'Yes, another', true),
+          Choice(_savedCount == 0 ? 'Save & done' : 'All done', false),
         ]),
       );
     }
@@ -119,18 +178,39 @@ class _AddQPageState extends State<AddQPage> {
   }
 
   Future<void> _complete(BuildContext ctx, Map<String, Object?> a) async {
+    final cls = a['agilityClass'] as AgilityClass;
+    final preferred = (cls.isPremier ? false : a['preferred']) as bool;
+    final level = (cls.isPremier ? AgilityLevel.master : a['level']) as AgilityLevel;
+
+    if (_isEditing) {
+      if (a['saveEdit'] == 'cancel') {
+        if (ctx.mounted) Navigator.of(ctx).pop(0);
+        return;
+      }
+      final updated = widget.editing!.copyWith(
+        date: a['date'] as DateTime,
+        agilityClass: cls,
+        level: level,
+        preferred: preferred,
+        machPoints: (a['machPoints'] as num?)?.toInt() ?? 0,
+      );
+      await widget.repo.updateQ(updated);
+      if (ctx.mounted) Navigator.of(ctx).pop(1);
+      return;
+    }
+
     final q = Q.create(
       dogId: a['dog'] as String,
       date: a['date'] as DateTime,
-      agilityClass: a['agilityClass'] as AgilityClass,
-      level: a['level'] as AgilityLevel,
+      agilityClass: cls,
+      level: level,
+      preferred: preferred,
       machPoints: (a['machPoints'] as num?)?.toInt() ?? 0,
     );
     await widget.repo.addQ(q);
     _savedCount++;
 
     if (a['addAnother'] == true) {
-      // Keep dog, drop everything else.
       _ctrl.rewindToKey('agilityClass');
     } else {
       if (ctx.mounted) Navigator.of(ctx).pop(_savedCount);
@@ -146,7 +226,9 @@ class _AddQPageState extends State<AddQPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Log a Q')),
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Edit Q' : 'Log a Q'),
+      ),
       body: ConvoView(controller: _ctrl),
     );
   }

@@ -69,8 +69,48 @@ class Repo extends ChangeNotifier {
     return null;
   }
 
+  /// Case-insensitive lookup by call name. Used to merge duplicate
+  /// entries.
+  Dog? dogByName(String callName) {
+    final norm = callName.trim().toLowerCase();
+    for (final d in _dogs) {
+      if (d.callName.toLowerCase() == norm) return d;
+    }
+    return null;
+  }
+
   List<Q> qsForDog(String dogId) =>
       _qs.where((q) => q.dogId == dogId).toList(growable: false);
+
+  /// Add a dog, or merge into an existing one if the call name matches
+  /// (case-insensitive). Returns the resulting Dog and whether it was
+  /// merged into an existing record.
+  Future<({Dog dog, bool merged})> upsertDog(Dog dog) async {
+    final existing = dogByName(dog.callName);
+    if (existing != null && existing.id != dog.id) {
+      final merged = existing.copyWith(
+        callName: dog.callName,
+        breed: dog.breed ?? existing.breed,
+        heightInches: dog.heightInches ?? existing.heightInches,
+        dateOfBirth: dog.dateOfBirth ?? existing.dateOfBirth,
+        notes: dog.notes ?? existing.notes,
+      );
+      final i = _dogs.indexWhere((d) => d.id == existing.id);
+      _dogs[i] = merged;
+      await _saveDogs();
+      notifyListeners();
+      return (dog: merged, merged: true);
+    }
+    final i = _dogs.indexWhere((d) => d.id == dog.id);
+    if (i >= 0) {
+      _dogs[i] = dog;
+    } else {
+      _dogs.add(dog);
+    }
+    await _saveDogs();
+    notifyListeners();
+    return (dog: dog, merged: false);
+  }
 
   Future<void> addDog(Dog dog) async {
     _dogs.add(dog);

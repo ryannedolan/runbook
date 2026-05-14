@@ -2,85 +2,258 @@ import '../models/q.dart';
 import 'achievement.dart';
 import 'engine.dart';
 
-/// AKC agility title rules, organized as a gated decision tree.
-RuleNode akcAgilityTree() {
-  return RuleNode.group(
-    title: 'AKC Agility',
-    children: [
-      // Standard class titles. Always evaluated.
-      RuleNode.leaf(LevelQCountTitle(
-        id: 'akc.agility.std.na',
-        title: 'NA',
-        description: 'Novice Agility — 3 Q\'s in Novice Standard',
-        agilityClass: AgilityClass.standard,
-        level: AgilityLevel.novice,
-        qCountNeeded: 3,
-      )),
-      RuleNode.leaf(LevelQCountTitle(
-        id: 'akc.agility.std.oa',
-        title: 'OA',
-        description: 'Open Agility — 3 Q\'s in Open Standard',
-        agilityClass: AgilityClass.standard,
-        level: AgilityLevel.open,
-        qCountNeeded: 3,
-      )),
-      RuleNode.leaf(LevelQCountTitle(
-        id: 'akc.agility.std.ax',
-        title: 'AX',
-        description: 'Agility Excellent — 3 Q\'s in Excellent Standard',
-        agilityClass: AgilityClass.standard,
-        level: AgilityLevel.excellent,
-        qCountNeeded: 3,
-      )),
-      RuleNode.leaf(LevelQCountTitle(
-        id: 'akc.agility.std.mx',
-        title: 'MX',
-        description: 'Master Agility Excellent — 10 Q\'s in Master Standard',
-        agilityClass: AgilityClass.standard,
-        level: AgilityLevel.master,
-        qCountNeeded: 10,
-      )),
+// ---------------------------------------------------------------------------
+// AKC agility achievement library, organized as TitleProgression chains
+// plus champion titles.
+//
+// IMPORTANT: AKC's exact Q counts for the bronze/silver/gold/century
+// titles vary by source. These numbers reflect the common
+// "cumulative-Q" reading; corrections welcome.
+// ---------------------------------------------------------------------------
 
-      // JWW class titles.
-      RuleNode.leaf(LevelQCountTitle(
-        id: 'akc.agility.jww.naj',
-        title: 'NAJ',
-        description: 'Novice Agility Jumper — 3 Q\'s in Novice JWW',
-        agilityClass: AgilityClass.jww,
-        level: AgilityLevel.novice,
-        qCountNeeded: 3,
-      )),
-      RuleNode.leaf(LevelQCountTitle(
-        id: 'akc.agility.jww.oaj',
-        title: 'OAJ',
-        description: 'Open Agility Jumper — 3 Q\'s in Open JWW',
-        agilityClass: AgilityClass.jww,
-        level: AgilityLevel.open,
-        qCountNeeded: 3,
-      )),
-      RuleNode.leaf(LevelQCountTitle(
-        id: 'akc.agility.jww.axj',
-        title: 'AXJ',
-        description: 'Excellent Agility Jumper — 3 Q\'s in Excellent JWW',
-        agilityClass: AgilityClass.jww,
-        level: AgilityLevel.excellent,
-        qCountNeeded: 3,
-      )),
-      RuleNode.leaf(LevelQCountTitle(
-        id: 'akc.agility.jww.mxj',
-        title: 'MXJ',
-        description: 'Master Excellent Jumper — 10 Q\'s in Master JWW',
-        agilityClass: AgilityClass.jww,
-        level: AgilityLevel.master,
-        qCountNeeded: 10,
-      )),
+LevelQCountTitle _t({
+  required String id,
+  required String title,
+  required String description,
+  required AgilityClass cls,
+  required AgilityLevel level,
+  required int n,
+  bool preferred = false,
+}) =>
+    LevelQCountTitle(
+      id: id,
+      title: title,
+      description: description,
+      agilityClass: cls,
+      level: level,
+      qCountNeeded: n,
+      preferred: preferred,
+    );
 
-      // Combo title — only worth evaluating once there's at least one
-      // Master-level Q in either class.
-      RuleNode.gated(
-        gate: (qs) => qs.any((q) => q.level == AgilityLevel.master),
-        child: RuleNode.leaf(MachTitle()),
+/// Regular Standard chain: NA → OA → AX → MX → MXB → MXS → MXG → MXC.
+final regularStandardChain = TitleProgression(
+  name: 'Standard',
+  titles: [
+    _t(id: 'akc.std.na', title: 'NA', description: 'Novice Agility — 3 Q\'s in Novice Standard',
+        cls: AgilityClass.standard, level: AgilityLevel.novice, n: 3),
+    _t(id: 'akc.std.oa', title: 'OA', description: 'Open Agility — 3 Q\'s in Open Standard',
+        cls: AgilityClass.standard, level: AgilityLevel.open, n: 3),
+    _t(id: 'akc.std.ax', title: 'AX', description: 'Agility Excellent — 3 Q\'s in Excellent Standard',
+        cls: AgilityClass.standard, level: AgilityLevel.excellent, n: 3),
+    _t(id: 'akc.std.mx', title: 'MX', description: 'Master Agility Excellent — 10 Q\'s in Master Standard',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 10),
+    _t(id: 'akc.std.mxb', title: 'MXB', description: 'Master Bronze — 25 Master Standard Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 25),
+    _t(id: 'akc.std.mxs', title: 'MXS', description: 'Master Silver — 50 Master Standard Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 50),
+    _t(id: 'akc.std.mxg', title: 'MXG', description: 'Master Gold — 100 Master Standard Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 100),
+    _t(id: 'akc.std.mxc', title: 'MXC', description: 'Master Century — 150 Master Standard Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 150),
+  ],
+);
+
+/// Regular JWW chain: NAJ → OAJ → AXJ → MXJ → MJB → MJS → MJG → MJC.
+final regularJwwChain = TitleProgression(
+  name: 'JWW',
+  titles: [
+    _t(id: 'akc.jww.naj', title: 'NAJ', description: 'Novice JWW — 3 Q\'s in Novice JWW',
+        cls: AgilityClass.jww, level: AgilityLevel.novice, n: 3),
+    _t(id: 'akc.jww.oaj', title: 'OAJ', description: 'Open JWW — 3 Q\'s in Open JWW',
+        cls: AgilityClass.jww, level: AgilityLevel.open, n: 3),
+    _t(id: 'akc.jww.axj', title: 'AXJ', description: 'Excellent JWW — 3 Q\'s in Excellent JWW',
+        cls: AgilityClass.jww, level: AgilityLevel.excellent, n: 3),
+    _t(id: 'akc.jww.mxj', title: 'MXJ', description: 'Master JWW — 10 Q\'s in Master JWW',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 10),
+    _t(id: 'akc.jww.mjb', title: 'MJB', description: 'Master JWW Bronze — 25 Master JWW Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 25),
+    _t(id: 'akc.jww.mjs', title: 'MJS', description: 'Master JWW Silver — 50 Master JWW Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 50),
+    _t(id: 'akc.jww.mjg', title: 'MJG', description: 'Master JWW Gold — 100 Master JWW Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 100),
+    _t(id: 'akc.jww.mjc', title: 'MJC', description: 'Master JWW Century — 150 Master JWW Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 150),
+  ],
+);
+
+/// Preferred Standard chain: NAP → OAP → AXP → MXP → MXP2 → MXP3 → MXP4 → MXP5.
+final preferredStandardChain = TitleProgression(
+  name: 'Preferred Standard',
+  titles: [
+    _t(id: 'akc.pstd.nap', title: 'NAP', description: 'Novice Agility Preferred — 3 Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.novice, n: 3, preferred: true),
+    _t(id: 'akc.pstd.oap', title: 'OAP', description: 'Open Agility Preferred — 3 Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.open, n: 3, preferred: true),
+    _t(id: 'akc.pstd.axp', title: 'AXP', description: 'Excellent Agility Preferred — 3 Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.excellent, n: 3, preferred: true),
+    _t(id: 'akc.pstd.mxp', title: 'MXP', description: 'Master Agility Preferred — 10 Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 10, preferred: true),
+    _t(id: 'akc.pstd.mxp2', title: 'MXP2', description: 'Master Preferred 2 — 20 Master Preferred Std Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 20, preferred: true),
+    _t(id: 'akc.pstd.mxp3', title: 'MXP3', description: 'Master Preferred 3 — 30 Master Preferred Std Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 30, preferred: true),
+    _t(id: 'akc.pstd.mxp4', title: 'MXP4', description: 'Master Preferred 4 — 40 Master Preferred Std Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 40, preferred: true),
+    _t(id: 'akc.pstd.mxp5', title: 'MXP5', description: 'Master Preferred 5 — 50 Master Preferred Std Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 50, preferred: true),
+  ],
+);
+
+/// Preferred JWW chain: NJP → OJP → AJP → MJP → MJP2 → ... → MJP5.
+final preferredJwwChain = TitleProgression(
+  name: 'Preferred JWW',
+  titles: [
+    _t(id: 'akc.pjww.njp', title: 'NJP', description: 'Novice JWW Preferred — 3 Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.novice, n: 3, preferred: true),
+    _t(id: 'akc.pjww.ojp', title: 'OJP', description: 'Open JWW Preferred — 3 Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.open, n: 3, preferred: true),
+    _t(id: 'akc.pjww.ajp', title: 'AJP', description: 'Excellent JWW Preferred — 3 Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.excellent, n: 3, preferred: true),
+    _t(id: 'akc.pjww.mjp', title: 'MJP', description: 'Master JWW Preferred — 10 Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 10, preferred: true),
+    _t(id: 'akc.pjww.mjp2', title: 'MJP2', description: 'Master JWW Preferred 2 — 20 Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 20, preferred: true),
+    _t(id: 'akc.pjww.mjp3', title: 'MJP3', description: 'Master JWW Preferred 3 — 30 Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 30, preferred: true),
+    _t(id: 'akc.pjww.mjp4', title: 'MJP4', description: 'Master JWW Preferred 4 — 40 Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 40, preferred: true),
+    _t(id: 'akc.pjww.mjp5', title: 'MJP5', description: 'Master JWW Preferred 5 — 50 Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 50, preferred: true),
+  ],
+);
+
+/// Premier titles — each chain has just one title for now (PAD, PJD).
+final premierStandardChain = TitleProgression(
+  name: 'Premier Standard',
+  titles: [
+    PremierCountTitle(
+      id: 'akc.premier.pad',
+      title: 'PAD',
+      description: 'Premier Standard Dog — 5 Premier Standard Q\'s',
+      agilityClass: AgilityClass.premierStandard,
+      qCountNeeded: 5,
+    ),
+  ],
+);
+final premierJwwChain = TitleProgression(
+  name: 'Premier JWW',
+  titles: [
+    PremierCountTitle(
+      id: 'akc.premier.pjd',
+      title: 'PJD',
+      description: 'Premier JWW Dog — 5 Premier JWW Q\'s',
+      agilityClass: AgilityClass.premierJww,
+      qCountNeeded: 5,
+    ),
+  ],
+);
+
+/// MACH chain — MACH, MACH2, MACH3 (regular Master).
+final machChain = TitleProgression(
+  name: 'MACH',
+  titles: [
+    for (var n = 1; n <= 3; n++)
+      ChampionTitle(
+        id: n == 1 ? 'akc.mach' : 'akc.mach$n',
+        title: n == 1 ? 'MACH' : 'MACH$n',
+        description: n == 1
+            ? 'Master Agility Champion — 750 MACH points + 20 double Qs'
+            : 'MACH$n — ${n * 750} MACH points + ${n * 20} double Qs',
+        multiplier: n,
+        preferred: false,
       ),
-    ],
-  );
+  ],
+);
+
+/// PAX chain — PAX, PAX2, PAX3 (preferred Master).
+final paxChain = TitleProgression(
+  name: 'PAX',
+  titles: [
+    for (var n = 1; n <= 3; n++)
+      ChampionTitle(
+        id: n == 1 ? 'akc.pax' : 'akc.pax$n',
+        title: n == 1 ? 'PAX' : 'PAX$n',
+        description: n == 1
+            ? 'Preferred Agility Excellent — 750 PACH points + 20 PDQs'
+            : 'PAX$n — ${n * 750} PACH points + ${n * 20} preferred double Qs',
+        multiplier: n,
+        preferred: true,
+      ),
+  ],
+);
+
+/// All chains in the order we usually want to walk them.
+final allAkcChains = <TitleProgression>[
+  regularStandardChain,
+  regularJwwChain,
+  machChain,
+  preferredStandardChain,
+  preferredJwwChain,
+  paxChain,
+  premierStandardChain,
+  premierJwwChain,
+];
+
+/// Look up the chain that contains a given achievement, if any.
+TitleProgression? chainOf(Achievement a) {
+  for (final c in allAkcChains) {
+    if (c.titles.contains(a)) return c;
+  }
+  return null;
 }
+
+/// The decision tree, with gates that skip whole sub-trees when no
+/// matching Qs exist.
+RuleNode akcAgilityTree() => RuleNode.group(
+      title: 'AKC Agility',
+      children: [
+        // Regular chains — always evaluated (everyone starts here).
+        for (final t in regularStandardChain.titles) RuleNode.leaf(t),
+        for (final t in regularJwwChain.titles) RuleNode.leaf(t),
+
+        // Preferred chains — only evaluated if there's at least one
+        // preferred Q.
+        RuleNode.gated(
+          gate: (qs) => qs.any((q) => q.preferred),
+          child: RuleNode.group(title: 'Preferred', children: [
+            for (final t in preferredStandardChain.titles) RuleNode.leaf(t),
+            for (final t in preferredJwwChain.titles) RuleNode.leaf(t),
+          ]),
+        ),
+
+        // Premier — only evaluated if there's at least one Premier Q.
+        RuleNode.gated(
+          gate: (qs) => qs.any((q) => q.agilityClass.isPremier),
+          child: RuleNode.group(title: 'Premier', children: [
+            for (final t in premierStandardChain.titles) RuleNode.leaf(t),
+            for (final t in premierJwwChain.titles) RuleNode.leaf(t),
+          ]),
+        ),
+
+        // MACH — needs a regular Master Q to even be worth evaluating.
+        RuleNode.gated(
+          gate: (qs) => qs.any((q) =>
+              q.level == AgilityLevel.master &&
+              !q.preferred &&
+              (q.agilityClass == AgilityClass.standard ||
+                  q.agilityClass == AgilityClass.jww)),
+          child: RuleNode.group(
+            title: 'MACH',
+            children: [for (final t in machChain.titles) RuleNode.leaf(t)],
+          ),
+        ),
+
+        // PAX — needs a preferred Master Q.
+        RuleNode.gated(
+          gate: (qs) => qs.any((q) =>
+              q.level == AgilityLevel.master &&
+              q.preferred &&
+              (q.agilityClass == AgilityClass.standard ||
+                  q.agilityClass == AgilityClass.jww)),
+          child: RuleNode.group(
+            title: 'PAX',
+            children: [for (final t in paxChain.titles) RuleNode.leaf(t)],
+          ),
+        ),
+      ],
+    );

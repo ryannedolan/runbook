@@ -29,7 +29,7 @@ void main() {
         q(cls: AgilityClass.jww, level: AgilityLevel.novice, date: DateTime(2026, 1, 3)),
       ];
       final results = RulesEngine().evaluate(qs);
-      final naj = find(results, 'akc.agility.jww.naj');
+      final naj = find(results, 'akc.jww.naj');
       expect(naj.isUnlocked, isTrue);
       expect(naj.impliedBy, isNull);
       expect(naj.unlockedAt, DateTime(2026, 1, 3));
@@ -41,7 +41,7 @@ void main() {
         q(cls: AgilityClass.jww, level: AgilityLevel.novice),
       ];
       final results = RulesEngine().evaluate(qs);
-      final naj = find(results, 'akc.agility.jww.naj');
+      final naj = find(results, 'akc.jww.naj');
       expect(naj.isUnlocked, isFalse);
       expect(naj.have, 2);
       expect(naj.need, 3);
@@ -55,9 +55,9 @@ void main() {
         q(cls: AgilityClass.jww, level: AgilityLevel.master, date: masterDate),
       ];
       final results = RulesEngine().evaluate(qs);
-      final naj = find(results, 'akc.agility.jww.naj');
-      final oaj = find(results, 'akc.agility.jww.oaj');
-      final axj = find(results, 'akc.agility.jww.axj');
+      final naj = find(results, 'akc.jww.naj');
+      final oaj = find(results, 'akc.jww.oaj');
+      final axj = find(results, 'akc.jww.axj');
 
       expect(naj.isUnlocked, isTrue);
       expect(naj.impliedBy, AgilityLevel.master);
@@ -75,10 +75,10 @@ void main() {
         q(cls: AgilityClass.jww, level: AgilityLevel.excellent),
       ];
       final results = RulesEngine().evaluate(qs);
-      expect(find(results, 'akc.agility.jww.naj').isUnlocked, isTrue);
-      expect(find(results, 'akc.agility.jww.oaj').isUnlocked, isTrue);
-      expect(find(results, 'akc.agility.jww.axj').isUnlocked, isFalse);
-      expect(find(results, 'akc.agility.jww.axj').have, 1);
+      expect(find(results, 'akc.jww.naj').isUnlocked, isTrue);
+      expect(find(results, 'akc.jww.oaj').isUnlocked, isTrue);
+      expect(find(results, 'akc.jww.axj').isUnlocked, isFalse);
+      expect(find(results, 'akc.jww.axj').have, 1);
     });
 
     test('Std and JWW are independent', () {
@@ -86,12 +86,90 @@ void main() {
         q(cls: AgilityClass.standard, level: AgilityLevel.master),
       ];
       final results = RulesEngine().evaluate(qs);
-      expect(find(results, 'akc.agility.std.na').isUnlocked, isTrue);
+      expect(find(results, 'akc.std.na').isUnlocked, isTrue);
       // No JWW Qs at all — no JWW titles should appear.
       expect(
-        results.where((r) => r.achievement.id.startsWith('akc.agility.jww.')),
+        results.where((r) => r.achievement.id.startsWith('akc.jww.')),
         isEmpty,
       );
+    });
+  });
+
+  group('Preferred chain', () {
+    test('3 Novice Preferred JWW Qs unlocks NJP, not NAJ', () {
+      final qs = [
+        for (var i = 0; i < 3; i++)
+          Q.create(
+            dogId: 'd',
+            date: DateTime(2026, 1, i + 1),
+            agilityClass: AgilityClass.jww,
+            level: AgilityLevel.novice,
+            preferred: true,
+          ),
+      ];
+      final results = RulesEngine().evaluate(qs);
+      expect(find(results, 'akc.pjww.njp').isUnlocked, isTrue);
+      // No regular Q → NAJ should not appear at all.
+      expect(results.where((r) => r.achievement.id == 'akc.jww.naj'), isEmpty);
+    });
+
+    test('Master Preferred Std Q implies MXP, MXP not MX', () {
+      final qs = [
+        Q.create(
+          dogId: 'd',
+          date: DateTime(2026, 5, 1),
+          agilityClass: AgilityClass.standard,
+          level: AgilityLevel.master,
+          preferred: true,
+        ),
+      ];
+      final results = RulesEngine().evaluate(qs);
+      // No regular Std Qs → no NA/OA/AX/MX results at all.
+      expect(results.where((r) => r.achievement.id.startsWith('akc.std.')), isEmpty);
+      // Preferred chain — NAP/OAP/AXP implied, MXP in progress.
+      expect(find(results, 'akc.pstd.nap').isUnlocked, isTrue);
+      expect(find(results, 'akc.pstd.oap').isUnlocked, isTrue);
+      expect(find(results, 'akc.pstd.axp').isUnlocked, isTrue);
+      expect(find(results, 'akc.pstd.mxp').isUnlocked, isFalse);
+      expect(find(results, 'akc.pstd.mxp').have, 1);
+    });
+  });
+
+  group('Premier titles', () {
+    test('5 Premier Standard Qs unlocks PAD', () {
+      final qs = [
+        for (var i = 0; i < 5; i++)
+          Q.create(
+            dogId: 'd',
+            date: DateTime(2026, 4, i + 1),
+            agilityClass: AgilityClass.premierStandard,
+            level: AgilityLevel.master,
+          ),
+      ];
+      final results = RulesEngine().evaluate(qs);
+      expect(find(results, 'akc.premier.pad').isUnlocked, isTrue);
+      // PJD has no Qs → no PJD entry.
+      expect(results.where((r) => r.achievement.id == 'akc.premier.pjd'), isEmpty);
+    });
+  });
+
+  group('Master tier titles', () {
+    test('25 Master Std Qs unlocks both MX and MXB', () {
+      final qs = [
+        for (var i = 0; i < 25; i++)
+          Q.create(
+            dogId: 'd',
+            date: DateTime(2026, 1, 1).add(Duration(days: i)),
+            agilityClass: AgilityClass.standard,
+            level: AgilityLevel.master,
+          ),
+      ];
+      final results = RulesEngine().evaluate(qs);
+      expect(find(results, 'akc.std.mx').isUnlocked, isTrue);
+      expect(find(results, 'akc.std.mxb').isUnlocked, isTrue);
+      expect(find(results, 'akc.std.mxs').isUnlocked, isFalse);
+      expect(find(results, 'akc.std.mxs').have, 25);
+      expect(find(results, 'akc.std.mxs').need, 50);
     });
   });
 
@@ -102,7 +180,7 @@ void main() {
         q(cls: AgilityClass.jww, level: AgilityLevel.excellent),
       ];
       final results = RulesEngine().evaluate(qs);
-      final mach = results.where((r) => r.achievement.id == 'akc.agility.mach');
+      final mach = results.where((r) => r.achievement.id == 'akc.mach');
       expect(mach, isEmpty, reason: 'MACH gate should suppress evaluation');
     });
 
@@ -111,7 +189,7 @@ void main() {
         q(cls: AgilityClass.standard, level: AgilityLevel.master, machPoints: 10),
       ];
       final results = RulesEngine().evaluate(qs);
-      final mach = find(results, 'akc.agility.mach');
+      final mach = find(results, 'akc.mach');
       expect(mach.isUnlocked, isFalse);
       expect(mach.hasProgress, isTrue);
     });
@@ -126,7 +204,7 @@ void main() {
         qs.add(q(cls: AgilityClass.jww, level: AgilityLevel.master, date: d, machPoints: 20));
       }
       final results = RulesEngine().evaluate(qs);
-      final mach = find(results, 'akc.agility.mach');
+      final mach = find(results, 'akc.mach');
       expect(mach.isUnlocked, isTrue);
     });
   });
