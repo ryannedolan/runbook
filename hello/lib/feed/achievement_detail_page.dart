@@ -83,11 +83,11 @@ class AchievementDetailPage extends StatelessWidget {
         Row(
           children: [
             SizedBox(
-              width: 96,
+              width: 104,
               child: Center(
-                child: PixelRosette(
-                  achievement: r.achievement,
-                  scale: 5,
+                child: PixelRosette.forAchievement(
+                  r.achievement,
+                  scale: 4,
                   dimmed: !r.isUnlocked,
                 ),
               ),

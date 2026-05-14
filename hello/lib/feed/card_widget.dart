@@ -51,9 +51,9 @@ class AchievementCard extends StatelessWidget {
               SizedBox(
                 width: 56,
                 child: Center(
-                  child: PixelRosette(
-                    achievement: r.achievement,
-                    scale: 3,
+                  child: PixelRosette.forAchievement(
+                    r.achievement,
+                    scale: 2,
                     dimmed: !r.isUnlocked,
                   ),
                 ),
@@ -204,7 +204,7 @@ class _PinnedAchievementCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          PixelRosette(achievement: r.achievement, scale: 4),
+          PixelRosette.forAchievement(r.achievement, scale: 3),
           const SizedBox(height: 4),
           Text(
             r.achievement.title,
@@ -241,7 +241,7 @@ class _PinnedAchievementCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          PixelRosette(achievement: r.achievement, scale: 3, dimmed: true),
+          PixelRosette.forAchievement(r.achievement, scale: 2, dimmed: true),
           const SizedBox(height: 4),
           Text(
             r.achievement.title,
