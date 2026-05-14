@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -47,6 +48,62 @@ class Repo extends ChangeNotifier {
         ..clear()
         ..addAll(list.cast<String>());
     }
+    _dedupeDogs();
+  }
+
+  /// One-shot: collapse dogs with the same call name (case-insensitive)
+  /// into the first occurrence, reassigning any Qs to the kept dog's
+  /// id. Runs on load to clean up legacy data.
+  void _dedupeDogs() {
+    final keepers = <String, Dog>{}; // normalized name -> keeper
+    final remap = <String, String>{}; // old dogId -> keeper dogId
+    final survivors = <Dog>[];
+    for (final d in _dogs) {
+      final key = d.callName.trim().toLowerCase();
+      final existing = keepers[key];
+      if (existing == null) {
+        keepers[key] = d;
+        survivors.add(d);
+      } else {
+        // Merge: prefer existing non-nulls, fill blanks from this dup.
+        final merged = existing.copyWith(
+          breed: existing.breed ?? d.breed,
+          heightInches: existing.heightInches ?? d.heightInches,
+          dateOfBirth: existing.dateOfBirth ?? d.dateOfBirth,
+          notes: existing.notes ?? d.notes,
+        );
+        keepers[key] = merged;
+        final i = survivors.indexWhere((s) => s.id == existing.id);
+        if (i >= 0) survivors[i] = merged;
+        remap[d.id] = existing.id;
+      }
+    }
+    if (remap.isEmpty) return;
+    _dogs
+      ..clear()
+      ..addAll(survivors);
+    for (var i = 0; i < _qs.length; i++) {
+      final newOwner = remap[_qs[i].dogId];
+      if (newOwner != null) {
+        _qs[i] = _qs[i].copyWith();
+        _qs[i] = Q(
+          id: _qs[i].id,
+          dogId: newOwner,
+          date: _qs[i].date,
+          agilityClass: _qs[i].agilityClass,
+          level: _qs[i].level,
+          preferred: _qs[i].preferred,
+          yards: _qs[i].yards,
+          score: _qs[i].score,
+          timeSeconds: _qs[i].timeSeconds,
+          machPoints: _qs[i].machPoints,
+          notes: _qs[i].notes,
+        );
+      }
+    }
+    // Persist the cleanup immediately so we never re-dedupe on load.
+    unawaited(_saveDogs());
+    unawaited(_saveQs());
   }
 
   Future<void> _saveDogs() async =>

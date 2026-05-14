@@ -24,6 +24,8 @@ class AddQPage extends StatefulWidget {
   State<AddQPage> createState() => _AddQPageState();
 }
 
+typedef _ClassDivision = (AgilityClass cls, bool preferred);
+
 class _AddQPageState extends State<AddQPage> {
   late final ConvoController _ctrl;
   int _savedCount = 0;
@@ -39,11 +41,9 @@ class _AddQPageState extends State<AddQPage> {
       if (q != null) {
         await _ctrl.answer(q.dogId, context);
         if (!mounted) return;
-        await _ctrl.answer(q.agilityClass, context);
+        await _ctrl.answer((q.agilityClass, q.preferred), context);
         if (!mounted) return;
         if (!q.agilityClass.isPremier) {
-          await _ctrl.answer(q.preferred, context);
-          if (!mounted) return;
           await _ctrl.answer(q.level, context);
           if (!mounted) return;
         }
@@ -63,6 +63,19 @@ class _AddQPageState extends State<AddQPage> {
     if (cls.isPremier) return false;
     return cls == AgilityClass.standard || cls == AgilityClass.jww;
   }
+
+  static const _classChoices = <(String, _ClassDivision)>[
+    ('Standard', (AgilityClass.standard, false)),
+    ('Standard Preferred', (AgilityClass.standard, true)),
+    ('JWW', (AgilityClass.jww, false)),
+    ('JWW Preferred', (AgilityClass.jww, true)),
+    ('FAST', (AgilityClass.fast, false)),
+    ('FAST Preferred', (AgilityClass.fast, true)),
+    ('T2B', (AgilityClass.t2b, false)),
+    ('T2B Preferred', (AgilityClass.t2b, true)),
+    ('Premier Standard', (AgilityClass.premierStandard, false)),
+    ('Premier JWW', (AgilityClass.premierJww, false)),
+  ];
 
   ConvoStep? _nextStep(Map<String, Object?> a) {
     if (!a.containsKey('dog')) {
@@ -98,28 +111,18 @@ class _AddQPageState extends State<AddQPage> {
         ),
       );
     }
-    if (!a.containsKey('agilityClass')) {
+    if (!a.containsKey('classDivision')) {
       return ConvoStep(
-        key: 'agilityClass',
+        key: 'classDivision',
         prompt: 'Which class?',
-        input: ChoiceInput<AgilityClass>([
-          for (final c in AgilityClass.values) Choice(c.label, c),
+        input: ChoiceInput<_ClassDivision>([
+          for (final c in _classChoices) Choice(c.$1, c.$2),
         ]),
       );
     }
-    final cls = a['agilityClass'] as AgilityClass;
-    // Premier is always regular Master — skip the preferred + level
-    // questions in that case.
-    if (!cls.isPremier && !a.containsKey('preferred')) {
-      return ConvoStep(
-        key: 'preferred',
-        prompt: 'Regular or Preferred?',
-        input: ChoiceInput<bool>([
-          Choice('Regular', false),
-          Choice('Preferred', true),
-        ]),
-      );
-    }
+    final cd = a['classDivision'] as _ClassDivision;
+    final cls = cd.$1;
+    final preferred = cd.$2;
     if (!cls.isPremier && !a.containsKey('level')) {
       return ConvoStep(
         key: 'level',
@@ -137,7 +140,6 @@ class _AddQPageState extends State<AddQPage> {
       );
     }
     final level = (cls.isPremier ? AgilityLevel.master : a['level']) as AgilityLevel;
-    final preferred = (cls.isPremier ? false : a['preferred']) as bool;
     if (_acceptsMachPoints(cls, level, preferred) &&
         !a.containsKey('machPoints')) {
       final label = preferred ? 'PACH' : 'MACH';
@@ -177,14 +179,15 @@ class _AddQPageState extends State<AddQPage> {
     return null;
   }
 
-  Future<void> _complete(BuildContext ctx, Map<String, Object?> a) async {
-    final cls = a['agilityClass'] as AgilityClass;
-    final preferred = (cls.isPremier ? false : a['preferred']) as bool;
+  Future<void> _complete(BuildContext _, Map<String, Object?> a) async {
+    final cd = a['classDivision'] as _ClassDivision;
+    final cls = cd.$1;
+    final preferred = cd.$2;
     final level = (cls.isPremier ? AgilityLevel.master : a['level']) as AgilityLevel;
 
     if (_isEditing) {
       if (a['saveEdit'] == 'cancel') {
-        if (ctx.mounted) Navigator.of(ctx).pop(0);
+        if (mounted) Navigator.of(context).pop(0);
         return;
       }
       final updated = widget.editing!.copyWith(
@@ -195,7 +198,7 @@ class _AddQPageState extends State<AddQPage> {
         machPoints: (a['machPoints'] as num?)?.toInt() ?? 0,
       );
       await widget.repo.updateQ(updated);
-      if (ctx.mounted) Navigator.of(ctx).pop(1);
+      if (mounted) Navigator.of(context).pop(1);
       return;
     }
 
@@ -211,9 +214,9 @@ class _AddQPageState extends State<AddQPage> {
     _savedCount++;
 
     if (a['addAnother'] == true) {
-      _ctrl.rewindToKey('agilityClass');
+      _ctrl.rewindToKey('classDivision');
     } else {
-      if (ctx.mounted) Navigator.of(ctx).pop(_savedCount);
+      if (mounted) Navigator.of(context).pop(_savedCount);
     }
   }
 

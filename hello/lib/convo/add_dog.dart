@@ -103,7 +103,7 @@ class _AddDogPageState extends State<AddDogPage> {
     return null;
   }
 
-  Future<void> _complete(BuildContext ctx, Map<String, Object?> a) async {
+  Future<void> _complete(BuildContext _, Map<String, Object?> a) async {
     if (a['save'] == 'restart') {
       _ctrl.rewindTo(0);
       return;
@@ -116,7 +116,7 @@ class _AddDogPageState extends State<AddDogPage> {
       notes: _nonEmpty(a['notes'] as String?),
     );
     final result = await widget.repo.upsertDog(dog);
-    if (ctx.mounted) Navigator.of(ctx).pop(result);
+    if (mounted) Navigator.of(context).pop(result);
   }
 
   static String? _nonEmpty(String? s) =>
