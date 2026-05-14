@@ -85,20 +85,7 @@ class Repo extends ChangeNotifier {
     for (var i = 0; i < _qs.length; i++) {
       final newOwner = remap[_qs[i].dogId];
       if (newOwner != null) {
-        _qs[i] = _qs[i].copyWith();
-        _qs[i] = Q(
-          id: _qs[i].id,
-          dogId: newOwner,
-          date: _qs[i].date,
-          agilityClass: _qs[i].agilityClass,
-          level: _qs[i].level,
-          preferred: _qs[i].preferred,
-          yards: _qs[i].yards,
-          score: _qs[i].score,
-          timeSeconds: _qs[i].timeSeconds,
-          machPoints: _qs[i].machPoints,
-          notes: _qs[i].notes,
-        );
+        _qs[i] = _qs[i].copyWith(dogId: newOwner);
       }
     }
     // Persist the cleanup immediately so we never re-dedupe on load.

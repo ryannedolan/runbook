@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../models/q.dart';
 import 'feed_items.dart';
-import 'widgets/ribbons.dart';
+import 'widgets/pixel_icons.dart';
 
 enum CardSize { pinned, feed }
 
@@ -51,11 +51,9 @@ class AchievementCard extends StatelessWidget {
               SizedBox(
                 width: 56,
                 child: Center(
-                  child: Rosette(
-                    style: styleForAchievement(r.achievement, size: 40),
-                    label: r.achievement.title.length <= 4
-                        ? r.achievement.title
-                        : null,
+                  child: PixelRosette(
+                    achievement: r.achievement,
+                    scale: 3,
                     dimmed: !r.isUnlocked,
                   ),
                 ),
@@ -206,10 +204,7 @@ class _PinnedAchievementCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Rosette(
-            style: styleForAchievement(r.achievement, size: 56),
-            label: r.achievement.title.length <= 4 ? r.achievement.title : null,
-          ),
+          PixelRosette(achievement: r.achievement, scale: 4),
           const SizedBox(height: 4),
           Text(
             r.achievement.title,
@@ -246,11 +241,7 @@ class _PinnedAchievementCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Rosette(
-            style: styleForAchievement(r.achievement, size: 44),
-            label: r.achievement.title.length <= 4 ? r.achievement.title : null,
-            dimmed: true,
-          ),
+          PixelRosette(achievement: r.achievement, scale: 3, dimmed: true),
           const SizedBox(height: 4),
           Text(
             r.achievement.title,
@@ -310,7 +301,7 @@ class QRibbon extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            FlatRibbon.forQ(q, height: 28),
+            PixelQRibbonPair(q: q, scale: 2),
             const SizedBox(width: 6),
             Column(
               mainAxisSize: MainAxisSize.min,

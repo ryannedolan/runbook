@@ -9,7 +9,7 @@ import '../rules/akc_agility.dart';
 import '../rules/engine.dart';
 import 'dog_profile_page.dart';
 import 'feed_items.dart';
-import 'widgets/ribbons.dart';
+import 'widgets/pixel_icons.dart';
 
 class AchievementDetailPage extends StatelessWidget {
   const AchievementDetailPage({
@@ -85,11 +85,9 @@ class AchievementDetailPage extends StatelessWidget {
             SizedBox(
               width: 96,
               child: Center(
-                child: Rosette(
-                  style: styleForAchievement(r.achievement, size: 76),
-                  label: r.achievement.title.length <= 4
-                      ? r.achievement.title
-                      : null,
+                child: PixelRosette(
+                  achievement: r.achievement,
+                  scale: 5,
                   dimmed: !r.isUnlocked,
                 ),
               ),
@@ -268,7 +266,7 @@ class AchievementDetailPage extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: Row(
             children: [
-              FlatRibbon.forQ(q, height: 26),
+              PixelQRibbonPair(q: q, scale: 2),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(

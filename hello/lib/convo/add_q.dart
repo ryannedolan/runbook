@@ -49,6 +49,8 @@ class _AddQPageState extends State<AddQPage> {
         }
         await _ctrl.answer(q.date, context);
         if (!mounted) return;
+        await _ctrl.answer(q.placement, context);
+        if (!mounted) return;
         if (_acceptsMachPoints(q.agilityClass, q.level, q.preferred)) {
           await _ctrl.answer(q.machPoints, context);
         }
@@ -139,6 +141,19 @@ class _AddQPageState extends State<AddQPage> {
         input: DateInputStep(initial: DateTime.now()),
       );
     }
+    if (!a.containsKey('placement')) {
+      return ConvoStep(
+        key: 'placement',
+        prompt: 'Did you place?',
+        input: ChoiceInput<int?>([
+          Choice('1st', 1),
+          Choice('2nd', 2),
+          Choice('3rd', 3),
+          Choice('4th', 4),
+          Choice('No placement', null),
+        ]),
+      );
+    }
     final level = (cls.isPremier ? AgilityLevel.master : a['level']) as AgilityLevel;
     if (_acceptsMachPoints(cls, level, preferred) &&
         !a.containsKey('machPoints')) {
@@ -185,6 +200,8 @@ class _AddQPageState extends State<AddQPage> {
     final preferred = cd.$2;
     final level = (cls.isPremier ? AgilityLevel.master : a['level']) as AgilityLevel;
 
+    final placement = a['placement'] as int?;
+
     if (_isEditing) {
       if (a['saveEdit'] == 'cancel') {
         if (mounted) Navigator.of(context).pop(0);
@@ -195,6 +212,8 @@ class _AddQPageState extends State<AddQPage> {
         agilityClass: cls,
         level: level,
         preferred: preferred,
+        placement: placement,
+        clearPlacement: placement == null,
         machPoints: (a['machPoints'] as num?)?.toInt() ?? 0,
       );
       await widget.repo.updateQ(updated);
@@ -208,6 +227,7 @@ class _AddQPageState extends State<AddQPage> {
       agilityClass: cls,
       level: level,
       preferred: preferred,
+      placement: placement,
       machPoints: (a['machPoints'] as num?)?.toInt() ?? 0,
     );
     await widget.repo.addQ(q);

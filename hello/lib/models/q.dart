@@ -63,6 +63,7 @@ class Q {
     required this.agilityClass,
     required this.level,
     this.preferred = false,
+    this.placement,
     this.yards,
     this.score,
     this.timeSeconds,
@@ -82,6 +83,11 @@ class Q {
   /// false when [agilityClass.isPremier] is true.
   final bool preferred;
 
+  /// 1st/2nd/3rd/4th place, if awarded. Null if the Q wasn't placed.
+  /// In the UI a placed Q renders with a second flat ribbon next to
+  /// its green Q ribbon (blue/red/yellow/white for 1st-4th).
+  final int? placement;
+
   final double? yards;
   final int? score;
   final double? timeSeconds;
@@ -97,6 +103,7 @@ class Q {
     required AgilityClass agilityClass,
     required AgilityLevel level,
     bool preferred = false,
+    int? placement,
     double? yards,
     int? score,
     double? timeSeconds,
@@ -110,6 +117,7 @@ class Q {
       agilityClass: agilityClass,
       level: level,
       preferred: preferred,
+      placement: placement,
       yards: yards,
       score: score,
       timeSeconds: timeSeconds,
@@ -129,10 +137,13 @@ class Q {
   }
 
   Q copyWith({
+    String? dogId,
     DateTime? date,
     AgilityClass? agilityClass,
     AgilityLevel? level,
     bool? preferred,
+    int? placement,
+    bool clearPlacement = false,
     double? yards,
     int? score,
     double? timeSeconds,
@@ -140,11 +151,12 @@ class Q {
     String? notes,
   }) => Q(
     id: id,
-    dogId: dogId,
+    dogId: dogId ?? this.dogId,
     date: date ?? this.date,
     agilityClass: agilityClass ?? this.agilityClass,
     level: level ?? this.level,
     preferred: preferred ?? this.preferred,
+    placement: clearPlacement ? null : (placement ?? this.placement),
     yards: yards ?? this.yards,
     score: score ?? this.score,
     timeSeconds: timeSeconds ?? this.timeSeconds,
@@ -159,6 +171,7 @@ class Q {
     'agilityClass': agilityClass.name,
     'level': level.name,
     if (preferred) 'preferred': true,
+    if (placement != null) 'placement': placement,
     if (yards != null) 'yards': yards,
     if (score != null) 'score': score,
     if (timeSeconds != null) 'timeSeconds': timeSeconds,
@@ -173,6 +186,7 @@ class Q {
     agilityClass: AgilityClass.values.byName(json['agilityClass'] as String),
     level: AgilityLevel.values.byName(json['level'] as String),
     preferred: json['preferred'] as bool? ?? false,
+    placement: (json['placement'] as num?)?.toInt(),
     yards: (json['yards'] as num?)?.toDouble(),
     score: (json['score'] as num?)?.toInt(),
     timeSeconds: (json['timeSeconds'] as num?)?.toDouble(),
