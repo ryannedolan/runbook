@@ -1,5 +1,6 @@
 import '../models/dog.dart';
 import '../models/q.dart';
+import '../repo/repo.dart';
 import '../rules/achievement.dart';
 import 'feed_items.dart';
 
@@ -10,6 +11,7 @@ List<TipFeedItem> buildTipsForDog({
   required Dog dog,
   required List<Q> qs,
   required List<AchievementResult> results,
+  Repo? repo,
 }) {
   final out = <TipFeedItem>[];
 
@@ -17,6 +19,9 @@ List<TipFeedItem> buildTipsForDog({
   for (final r in results) {
     if (!r.isUnlocked) continue;
     if (r.impliedBy != null) continue; // implied titles don't have ribbons
+    if (repo != null && repo.isRibbonCollected(dog.id, r.achievement.id)) {
+      continue;
+    }
     out.add(TipFeedItem(
       id: '${dog.id}.pickup.${r.achievement.id}',
       // Place pickup tip slightly after unlock so it sorts immediately
@@ -26,6 +31,8 @@ List<TipFeedItem> buildTipsForDog({
       body:
           'Pick it up at your next trial. ${dog.callName} earned ${r.achievement.title} on ${_md(r.unlockedAt!)}.',
       icon: '🎖️',
+      collectableRibbonDogId: dog.id,
+      collectableRibbonAchievementId: r.achievement.id,
     ));
   }
 

@@ -13,11 +13,13 @@ class Repo extends ChangeNotifier {
   static const _kDogs = 'runbook.dogs';
   static const _kQs = 'runbook.qs';
   static const _kPinned = 'runbook.pinnedCards';
+  static const _kCollectedRibbons = 'runbook.collectedRibbons';
 
   final SharedPreferences _prefs;
   final List<Dog> _dogs = [];
   final List<Q> _qs = [];
   final Set<String> _pinned = {};
+  final Set<String> _collectedRibbons = {};
 
   static Future<Repo> open() async {
     final prefs = await SharedPreferences.getInstance();
@@ -45,6 +47,13 @@ class Repo extends ChangeNotifier {
     if (pinnedJson != null) {
       final list = jsonDecode(pinnedJson) as List<dynamic>;
       _pinned
+        ..clear()
+        ..addAll(list.cast<String>());
+    }
+    final collectedJson = _prefs.getString(_kCollectedRibbons);
+    if (collectedJson != null) {
+      final list = jsonDecode(collectedJson) as List<dynamic>;
+      _collectedRibbons
         ..clear()
         ..addAll(list.cast<String>());
     }
@@ -101,6 +110,9 @@ class Repo extends ChangeNotifier {
 
   Future<void> _savePinned() async =>
       _prefs.setString(_kPinned, jsonEncode(_pinned.toList()));
+
+  Future<void> _saveCollected() async => _prefs.setString(
+      _kCollectedRibbons, jsonEncode(_collectedRibbons.toList()));
 
   List<Dog> get dogs => List.unmodifiable(_dogs);
   List<Q> get qs => List.unmodifiable(_qs);
@@ -203,6 +215,23 @@ class Repo extends ChangeNotifier {
   Future<void> togglePin(String cardId) async {
     if (!_pinned.add(cardId)) _pinned.remove(cardId);
     await _savePinned();
+    notifyListeners();
+  }
+
+  /// Has the user marked the physical ribbon for this (dog, achievement)
+  /// as collected? Used to suppress the "Don't forget your X ribbon!" tip.
+  bool isRibbonCollected(String dogId, String achievementId) =>
+      _collectedRibbons.contains('$dogId::$achievementId');
+
+  Future<void> markRibbonCollected(String dogId, String achievementId) async {
+    _collectedRibbons.add('$dogId::$achievementId');
+    await _saveCollected();
+    notifyListeners();
+  }
+
+  Future<void> unmarkRibbonCollected(String dogId, String achievementId) async {
+    _collectedRibbons.remove('$dogId::$achievementId');
+    await _saveCollected();
     notifyListeners();
   }
 

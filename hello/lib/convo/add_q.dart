@@ -51,6 +51,16 @@ class _AddQPageState extends State<AddQPage> {
         if (!mounted) return;
         await _ctrl.answer(q.placement, context);
         if (!mounted) return;
+        await _ctrl.answer(q.timeSeconds, context);
+        if (!mounted) return;
+        if (_acceptsYards(q.agilityClass)) {
+          await _ctrl.answer(q.yards, context);
+          if (!mounted) return;
+        }
+        if (_acceptsScore(q.agilityClass)) {
+          await _ctrl.answer(q.score?.toDouble(), context);
+          if (!mounted) return;
+        }
         if (_acceptsMachPoints(q.agilityClass, q.level, q.preferred)) {
           await _ctrl.answer(q.machPoints, context);
         }
@@ -65,6 +75,16 @@ class _AddQPageState extends State<AddQPage> {
     if (cls.isPremier) return false;
     return cls == AgilityClass.standard || cls == AgilityClass.jww;
   }
+
+  /// Courses where yardage is meaningful (used for YPS).
+  static bool _acceptsYards(AgilityClass cls) =>
+      cls == AgilityClass.standard ||
+      cls == AgilityClass.jww ||
+      cls == AgilityClass.premierStandard ||
+      cls == AgilityClass.premierJww;
+
+  /// FAST is scored on point accumulation.
+  static bool _acceptsScore(AgilityClass cls) => cls == AgilityClass.fast;
 
   static const _classChoices = <(String, _ClassDivision)>[
     ('Standard', (AgilityClass.standard, false)),
@@ -155,6 +175,27 @@ class _AddQPageState extends State<AddQPage> {
       );
     }
     final level = (cls.isPremier ? AgilityLevel.master : a['level']) as AgilityLevel;
+    if (!a.containsKey('timeSeconds')) {
+      return ConvoStep(
+        key: 'timeSeconds',
+        prompt: 'Course time? (seconds, optional)',
+        input: NumberInputStep(hint: 'e.g. 41.2', suffix: 's'),
+      );
+    }
+    if (_acceptsYards(cls) && !a.containsKey('yards')) {
+      return ConvoStep(
+        key: 'yards',
+        prompt: 'Course yardage? (optional)',
+        input: NumberInputStep(hint: 'e.g. 170', suffix: ' yds'),
+      );
+    }
+    if (_acceptsScore(cls) && !a.containsKey('score')) {
+      return ConvoStep(
+        key: 'score',
+        prompt: 'FAST points scored? (optional)',
+        input: NumberInputStep(hint: 'e.g. 65', suffix: ' pts'),
+      );
+    }
     if (_acceptsMachPoints(cls, level, preferred) &&
         !a.containsKey('machPoints')) {
       final label = preferred ? 'PACH' : 'MACH';
@@ -202,6 +243,11 @@ class _AddQPageState extends State<AddQPage> {
 
     final placement = a['placement'] as int?;
 
+    final timeSeconds = (a['timeSeconds'] as num?)?.toDouble();
+    final yards = (a['yards'] as num?)?.toDouble();
+    final score = (a['score'] as num?)?.toInt();
+    final machPoints = (a['machPoints'] as num?)?.toInt() ?? 0;
+
     if (_isEditing) {
       if (a['saveEdit'] == 'cancel') {
         if (mounted) Navigator.of(context).pop(0);
@@ -214,7 +260,13 @@ class _AddQPageState extends State<AddQPage> {
         preferred: preferred,
         placement: placement,
         clearPlacement: placement == null,
-        machPoints: (a['machPoints'] as num?)?.toInt() ?? 0,
+        timeSeconds: timeSeconds,
+        clearTimeSeconds: timeSeconds == null,
+        yards: yards,
+        clearYards: yards == null,
+        score: score,
+        clearScore: score == null,
+        machPoints: machPoints,
       );
       await widget.repo.updateQ(updated);
       if (mounted) Navigator.of(context).pop(1);
@@ -228,7 +280,10 @@ class _AddQPageState extends State<AddQPage> {
       level: level,
       preferred: preferred,
       placement: placement,
-      machPoints: (a['machPoints'] as num?)?.toInt() ?? 0,
+      timeSeconds: timeSeconds,
+      yards: yards,
+      score: score,
+      machPoints: machPoints,
     );
     await widget.repo.addQ(q);
     _savedCount++;

@@ -7,9 +7,11 @@ import '../models/q.dart';
 import '../repo/repo.dart';
 import '../rules/engine.dart';
 import 'achievement_detail_page.dart';
+import 'analytics.dart';
 import 'card_widget.dart';
 import 'dog_profile_page.dart';
 import 'feed_items.dart';
+import 'q_history_page.dart';
 import 'tips.dart';
 
 class FeedPage extends StatelessWidget {
@@ -35,7 +37,9 @@ class FeedPage extends StatelessWidget {
           for (final q in qs) {
             timeline.add(QFeedItem(dog: dog, q: q));
           }
-          timeline.addAll(buildTipsForDog(dog: dog, qs: qs, results: results));
+          timeline.addAll(
+              buildTipsForDog(dog: dog, qs: qs, results: results, repo: repo));
+          timeline.addAll(buildAnalyticsForDog(dog: dog, qs: qs));
         }
         timeline.sort(_byNewestThenAchievementsFirst);
 
@@ -46,6 +50,16 @@ class FeedPage extends StatelessWidget {
           appBar: AppBar(
             title: const Text('Runbook'),
             backgroundColor: cs.inversePrimary,
+            actions: [
+              IconButton(
+                tooltip: 'Q history',
+                icon: const Icon(Icons.search),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) => QHistoryPage(repo: repo)),
+                ),
+              ),
+            ],
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _onLogQ(context),
@@ -123,8 +137,9 @@ class FeedPage extends StatelessWidget {
     );
   }
 
-  /// Walks the timeline, collapsing consecutive Q items into a single
-  /// RibbonRow widget.
+  /// Walks the timeline, collapsing consecutive Q items into trial-day
+  /// groups (one per dog/date) so the user sees a clear "this trial"
+  /// cluster.
   List<Widget> _buildTimelineSlivers(BuildContext context, List<FeedItem> items) {
     final widgets = <Widget>[];
     var i = 0;
@@ -136,13 +151,27 @@ class FeedPage extends StatelessWidget {
           group.add(items[i] as QFeedItem);
           i++;
         }
-        widgets.add(RibbonRow(
-          qs: [for (final q in group) q.q],
-          onTapQ: (q) {
-            final owner = group.firstWhere((g) => g.q.id == q.id).dog;
-            _onEditQ(context, owner, q);
-          },
-        ));
+        // Sub-group by (dog, calendar date) and render each as a TrialDayCard.
+        final byKey = <String, List<QFeedItem>>{};
+        final order = <String>[];
+        for (final qf in group) {
+          final dateKey =
+              '${qf.dog.id}::${qf.q.date.year}-${qf.q.date.month}-${qf.q.date.day}';
+          if (!byKey.containsKey(dateKey)) {
+            order.add(dateKey);
+            byKey[dateKey] = [];
+          }
+          byKey[dateKey]!.add(qf);
+        }
+        for (final key in order) {
+          final day = byKey[key]!;
+          widgets.add(TrialDayCard(
+            dog: day.first.dog,
+            date: day.first.q.date,
+            qs: [for (final q in day) q.q],
+            onTapQ: (q) => _onEditQ(context, day.first.dog, q),
+          ));
+        }
       } else if (item is AchievementFeedItem) {
         widgets.add(Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -156,6 +185,17 @@ class FeedPage extends StatelessWidget {
           ),
         ));
         i++;
+      } else if (item is AnalyticsFeedItem) {
+        widgets.add(Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: AnalyticsCard(
+            item: item,
+            isPinned: repo.isPinned(item.cardId),
+            onTogglePin: () => repo.togglePin(item.cardId),
+            onDogTap: () => _onDogTap(context, item.dog),
+          ),
+        ));
+        i++;
       } else if (item is TipFeedItem) {
         widgets.add(Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -163,6 +203,12 @@ class FeedPage extends StatelessWidget {
             tip: item,
             isPinned: repo.isPinned(item.cardId),
             onTogglePin: () => repo.togglePin(item.cardId),
+            onMarkCollected: item.isCollectable
+                ? () => repo.markRibbonCollected(
+                      item.collectableRibbonDogId!,
+                      item.collectableRibbonAchievementId!,
+                    )
+                : null,
           ),
         ));
         i++;
@@ -189,6 +235,17 @@ class FeedPage extends StatelessWidget {
         size: CardSize.pinned,
       );
     }
+    if (item is AnalyticsFeedItem) {
+      return SizedBox(
+        width: 240,
+        child: AnalyticsCard(
+          item: item,
+          isPinned: true,
+          onTogglePin: () => repo.togglePin(item.cardId),
+          onDogTap: () => _onDogTap(context, item.dog),
+        ),
+      );
+    }
     if (item is TipFeedItem) {
       return SizedBox(
         width: 220,
@@ -196,6 +253,12 @@ class FeedPage extends StatelessWidget {
           tip: item,
           isPinned: true,
           onTogglePin: () => repo.togglePin(item.cardId),
+          onMarkCollected: item.isCollectable
+              ? () => repo.markRibbonCollected(
+                    item.collectableRibbonDogId!,
+                    item.collectableRibbonAchievementId!,
+                  )
+              : null,
         ),
       );
     }
@@ -209,7 +272,8 @@ class FeedPage extends StatelessWidget {
     int rank(FeedItem f) {
       if (f is AchievementFeedItem) return 0;
       if (f is TipFeedItem) return 1;
-      return 2;
+      if (f is AnalyticsFeedItem) return 2;
+      return 3;
     }
 
     return rank(a).compareTo(rank(b));

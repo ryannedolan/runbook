@@ -51,6 +51,12 @@ void main() {
   });
 
   testWidgets('Seeded repo shows feed with title cards', (tester) async {
+    // Tall viewport so the lazy SliverList builds all of the trial-day
+    // groups + achievement cards.
+    tester.view.physicalSize = const Size(1080, 4000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
     SharedPreferences.setMockInitialValues({});
     final repo = await Repo.open();
     await repo.seedSampleData();

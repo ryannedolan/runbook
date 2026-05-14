@@ -46,6 +46,47 @@ class QFeedItem extends FeedItem {
   DateTime get sortTimestamp => q.date;
 }
 
+/// Derived analytics — personal bests, top-3 averages, recent-run trends.
+/// Only emitted when enough Qs exist to make the stat meaningful.
+class AnalyticsFeedItem extends FeedItem {
+  AnalyticsFeedItem({
+    required this.id,
+    required this.dog,
+    required this.kind,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.timestamp,
+    this.unit,
+    this.trend,
+    this.contributingQIds = const [],
+  });
+
+  final String id;
+  final Dog dog;
+  final AnalyticsKind kind;
+  final String title;
+  final String subtitle;
+
+  /// Formatted display value (e.g. "41.2", "3.85").
+  final String value;
+  final String? unit;
+  final DateTime timestamp;
+
+  /// Optional series for a sparkline (chronological).
+  final List<double>? trend;
+
+  /// Which Qs this stat is built from, for drill-down later.
+  final List<String> contributingQIds;
+
+  @override
+  String get cardId => 'analytics::$id';
+  @override
+  DateTime get sortTimestamp => timestamp;
+}
+
+enum AnalyticsKind { personalBest, topAverage, trend }
+
 class TipFeedItem extends FeedItem {
   TipFeedItem({
     required this.id,
@@ -53,12 +94,23 @@ class TipFeedItem extends FeedItem {
     required this.title,
     required this.body,
     this.icon,
+    this.collectableRibbonDogId,
+    this.collectableRibbonAchievementId,
   });
   final String id;
   final DateTime timestamp;
   final String title;
   final String body;
   final String? icon;
+
+  /// If non-null, this tip is a "don't forget your ribbon" reminder and
+  /// can be dismissed by marking it collected via Repo.markRibbonCollected.
+  final String? collectableRibbonDogId;
+  final String? collectableRibbonAchievementId;
+
+  bool get isCollectable =>
+      collectableRibbonDogId != null && collectableRibbonAchievementId != null;
+
   @override
   String get cardId => 'tip::$id';
   @override

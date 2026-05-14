@@ -1,5 +1,23 @@
 import 'package:uuid/uuid.dart';
 
+/// Top-level sport. Today only [akcAgility] is fully implemented;
+/// [fastCAT] and [scentwork] are reserved so the data model carries the
+/// distinction even before their rule trees land.
+enum Sport { akcAgility, fastCAT, scentwork }
+
+extension SportX on Sport {
+  String get label => switch (this) {
+        Sport.akcAgility => 'AKC Agility',
+        Sport.fastCAT => 'FastCAT',
+        Sport.scentwork => 'Scentwork',
+      };
+  String get short => switch (this) {
+        Sport.akcAgility => 'Agility',
+        Sport.fastCAT => 'FastCAT',
+        Sport.scentwork => 'Scentwork',
+      };
+}
+
 /// AKC agility classes we currently model. Easy to extend.
 enum AgilityClass {
   standard,
@@ -62,6 +80,7 @@ class Q {
     required this.date,
     required this.agilityClass,
     required this.level,
+    this.sport = Sport.akcAgility,
     this.preferred = false,
     this.placement,
     this.yards,
@@ -74,6 +93,7 @@ class Q {
   final String id;
   final String dogId;
   final DateTime date;
+  final Sport sport;
   final AgilityClass agilityClass;
   final AgilityLevel level;
 
@@ -102,6 +122,7 @@ class Q {
     required DateTime date,
     required AgilityClass agilityClass,
     required AgilityLevel level,
+    Sport sport = Sport.akcAgility,
     bool preferred = false,
     int? placement,
     double? yards,
@@ -114,6 +135,7 @@ class Q {
       id: const Uuid().v4(),
       dogId: dogId,
       date: date,
+      sport: sport,
       agilityClass: agilityClass,
       level: level,
       preferred: preferred,
@@ -126,8 +148,6 @@ class Q {
     );
   }
 
-  String get sport => 'AKC Agility';
-
   /// "YPS" — yards per second. Null when either yards or time is unknown.
   double? get yps {
     final y = yards;
@@ -139,27 +159,32 @@ class Q {
   Q copyWith({
     String? dogId,
     DateTime? date,
+    Sport? sport,
     AgilityClass? agilityClass,
     AgilityLevel? level,
     bool? preferred,
     int? placement,
     bool clearPlacement = false,
     double? yards,
+    bool clearYards = false,
     int? score,
+    bool clearScore = false,
     double? timeSeconds,
+    bool clearTimeSeconds = false,
     int? machPoints,
     String? notes,
   }) => Q(
     id: id,
     dogId: dogId ?? this.dogId,
     date: date ?? this.date,
+    sport: sport ?? this.sport,
     agilityClass: agilityClass ?? this.agilityClass,
     level: level ?? this.level,
     preferred: preferred ?? this.preferred,
     placement: clearPlacement ? null : (placement ?? this.placement),
-    yards: yards ?? this.yards,
-    score: score ?? this.score,
-    timeSeconds: timeSeconds ?? this.timeSeconds,
+    yards: clearYards ? null : (yards ?? this.yards),
+    score: clearScore ? null : (score ?? this.score),
+    timeSeconds: clearTimeSeconds ? null : (timeSeconds ?? this.timeSeconds),
     machPoints: machPoints ?? this.machPoints,
     notes: notes ?? this.notes,
   );
@@ -168,6 +193,7 @@ class Q {
     'id': id,
     'dogId': dogId,
     'date': date.toIso8601String(),
+    if (sport != Sport.akcAgility) 'sport': sport.name,
     'agilityClass': agilityClass.name,
     'level': level.name,
     if (preferred) 'preferred': true,
@@ -183,6 +209,9 @@ class Q {
     id: json['id'] as String,
     dogId: json['dogId'] as String,
     date: DateTime.parse(json['date'] as String),
+    sport: json['sport'] is String
+        ? Sport.values.byName(json['sport'] as String)
+        : Sport.akcAgility,
     agilityClass: AgilityClass.values.byName(json['agilityClass'] as String),
     level: AgilityLevel.values.byName(json['level'] as String),
     preferred: json['preferred'] as bool? ?? false,

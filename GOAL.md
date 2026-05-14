@@ -82,3 +82,16 @@ Still deferred:
 - Mark-as-collected for "pickup your ribbon" tips.
 - Richer Q metadata collection in the convo (yards / time / score) — model supports it, convo doesn't ask for it yet.
 
+## Iteration 3 — Web + functional gap closure (2026-05-14)
+
+- **Web compile path**: `flutter run -d chrome` / `-d web-server` boots Runbook locally; live reload makes iteration ~free vs ~95s APK builds. Manifest + title customized.
+- **FAST + T2B chains** added (Regular + Preferred). FAST has NF/OF/XF/MXF; T2B has T2B → T2BCH (Master only). Gated so they only evaluate when matching Qs exist.
+- **Preferred badge**: cards now carry a small "PREF" pill so Preferred-division titles read at a glance.
+- **Q metadata in convo**: optional steps for course time (s), yards, FAST score, MACH/PACH points. Powers downstream analytics.
+- **Trial-day grouping**: feed Q-ribbon clusters now render inside a `TrialDayCard` with a date header, dog name + Q count, and a `DOUBLE-Q` badge when Master Std+JWW were both Q'd on the same day.
+- **Mark-as-collected ribbon tips**: pickup reminders carry a "Got it!" button; tapping persists a per-dog/per-achievement flag so the tip stops re-firing.
+- **Analytics cards**: data-conditional `AnalyticsFeedItem`s emitted only when enough data exists — fastest run, top YPS, top-3 average, last-N-runs trend with fl_chart sparkline.
+- **Q history page**: app-bar search icon → `QHistoryPage` with dog / class / level / division / date-range filters across all dogs.
+- **Multi-sport infra**: `Sport` enum (akcAgility / fastCAT / scentwork) on Q, with JSON migration that defaults legacy rows to akcAgility. Rule trees still agility-only; FastCAT and Scentwork title chains are a TODO for whichever sport gets prioritized next.
+- **Tests**: 18 (15 prior + FAST/T2B chain coverage + FAST Preferred parallelism).
+

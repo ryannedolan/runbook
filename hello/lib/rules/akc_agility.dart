@@ -122,6 +122,58 @@ final preferredJwwChain = TitleProgression(
   ],
 );
 
+/// Regular FAST chain: NF → OF → XF → MXF.
+final regularFastChain = TitleProgression(
+  name: 'FAST',
+  titles: [
+    _t(id: 'akc.fast.nf', title: 'NF', description: 'Novice FAST — 3 Q\'s in Novice FAST',
+        cls: AgilityClass.fast, level: AgilityLevel.novice, n: 3),
+    _t(id: 'akc.fast.of', title: 'OF', description: 'Open FAST — 3 Q\'s in Open FAST',
+        cls: AgilityClass.fast, level: AgilityLevel.open, n: 3),
+    _t(id: 'akc.fast.xf', title: 'XF', description: 'Excellent FAST — 3 Q\'s in Excellent FAST',
+        cls: AgilityClass.fast, level: AgilityLevel.excellent, n: 3),
+    _t(id: 'akc.fast.mxf', title: 'MXF', description: 'Master FAST — 10 Q\'s in Master FAST',
+        cls: AgilityClass.fast, level: AgilityLevel.master, n: 10),
+  ],
+);
+
+/// Preferred FAST chain: NFP → OFP → XFP → MFP.
+final preferredFastChain = TitleProgression(
+  name: 'FAST Preferred',
+  titles: [
+    _t(id: 'akc.fast.nfp', title: 'NFP', description: 'Novice FAST Preferred — 3 Q\'s',
+        cls: AgilityClass.fast, level: AgilityLevel.novice, n: 3, preferred: true),
+    _t(id: 'akc.fast.ofp', title: 'OFP', description: 'Open FAST Preferred — 3 Q\'s',
+        cls: AgilityClass.fast, level: AgilityLevel.open, n: 3, preferred: true),
+    _t(id: 'akc.fast.xfp', title: 'XFP', description: 'Excellent FAST Preferred — 3 Q\'s',
+        cls: AgilityClass.fast, level: AgilityLevel.excellent, n: 3, preferred: true),
+    _t(id: 'akc.fast.mfp', title: 'MFP', description: 'Master FAST Preferred — 10 Q\'s',
+        cls: AgilityClass.fast, level: AgilityLevel.master, n: 10, preferred: true),
+  ],
+);
+
+/// Time 2 Beat (Master only): T2B → T2BCH.
+final t2bChain = TitleProgression(
+  name: 'T2B',
+  titles: [
+    _t(id: 'akc.t2b.t2b', title: 'T2B', description: 'Time 2 Beat — 15 Master T2B Q\'s',
+        cls: AgilityClass.t2b, level: AgilityLevel.master, n: 15),
+    _t(id: 'akc.t2b.t2bch', title: 'T2BCH', description: 'Time 2 Beat Champion — 75 Master T2B Q\'s',
+        cls: AgilityClass.t2b, level: AgilityLevel.master, n: 75),
+  ],
+);
+
+/// Time 2 Beat Preferred: T2BP → T2BCHP.
+final t2bPreferredChain = TitleProgression(
+  name: 'T2B Preferred',
+  titles: [
+    _t(id: 'akc.t2b.t2bp', title: 'T2BP', description: 'Time 2 Beat Preferred — 15 Master T2B Preferred Q\'s',
+        cls: AgilityClass.t2b, level: AgilityLevel.master, n: 15, preferred: true),
+    _t(id: 'akc.t2b.t2bchp', title: 'T2BCHP', description: 'Time 2 Beat Preferred Champion — 75 Q\'s',
+        cls: AgilityClass.t2b, level: AgilityLevel.master, n: 75, preferred: true),
+  ],
+);
+
 /// Premier titles — each chain has just one title for now (PAD, PJD).
 final premierStandardChain = TitleProgression(
   name: 'Premier Standard',
@@ -187,9 +239,13 @@ final allAkcChains = <TitleProgression>[
   regularStandardChain,
   regularJwwChain,
   machChain,
+  regularFastChain,
+  t2bChain,
   preferredStandardChain,
   preferredJwwChain,
   paxChain,
+  preferredFastChain,
+  t2bPreferredChain,
   premierStandardChain,
   premierJwwChain,
 ];
@@ -207,11 +263,29 @@ TitleProgression? chainOf(Achievement a) {
 RuleNode akcAgilityTree() => RuleNode.group(
       title: 'AKC Agility',
       children: [
-        // Regular chains — always evaluated (everyone starts here).
+        // Regular Std + JWW — always evaluated (everyone starts here).
         for (final t in regularStandardChain.titles) RuleNode.leaf(t),
         for (final t in regularJwwChain.titles) RuleNode.leaf(t),
 
-        // Preferred chains — only evaluated if there's at least one
+        // FAST — only evaluated if there's at least one FAST Q.
+        RuleNode.gated(
+          gate: (qs) => qs.any((q) => q.agilityClass == AgilityClass.fast),
+          child: RuleNode.group(title: 'FAST', children: [
+            for (final t in regularFastChain.titles) RuleNode.leaf(t),
+            for (final t in preferredFastChain.titles) RuleNode.leaf(t),
+          ]),
+        ),
+
+        // T2B — only evaluated if there's at least one T2B Q.
+        RuleNode.gated(
+          gate: (qs) => qs.any((q) => q.agilityClass == AgilityClass.t2b),
+          child: RuleNode.group(title: 'T2B', children: [
+            for (final t in t2bChain.titles) RuleNode.leaf(t),
+            for (final t in t2bPreferredChain.titles) RuleNode.leaf(t),
+          ]),
+        ),
+
+        // Preferred Std + JWW — only evaluated if there's at least one
         // preferred Q.
         RuleNode.gated(
           gate: (qs) => qs.any((q) => q.preferred),

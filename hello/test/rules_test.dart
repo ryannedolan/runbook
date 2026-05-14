@@ -194,6 +194,43 @@ void main() {
       expect(mach.hasProgress, isTrue);
     });
 
+    test('FAST chain: 3 Novice FAST Qs unlocks NF', () {
+      final qs = [
+        for (var i = 0; i < 3; i++)
+          q(cls: AgilityClass.fast, level: AgilityLevel.novice, date: DateTime(2026, 1, 1 + i)),
+      ];
+      final results = RulesEngine().evaluate(qs);
+      final nf = find(results, 'akc.fast.nf');
+      expect(nf.isUnlocked, isTrue);
+    });
+
+    test('FAST Preferred chain: 3 Novice FAST Preferred Qs unlocks NFP, not NF', () {
+      final qs = [
+        for (var i = 0; i < 3; i++)
+          Q.create(
+            dogId: 'dog1',
+            date: DateTime(2026, 1, 1 + i),
+            agilityClass: AgilityClass.fast,
+            level: AgilityLevel.novice,
+            preferred: true,
+          ),
+      ];
+      final results = RulesEngine().evaluate(qs);
+      final nfp = find(results, 'akc.fast.nfp');
+      expect(nfp.isUnlocked, isTrue);
+      expect(results.where((r) => r.achievement.id == 'akc.fast.nf'), isEmpty);
+    });
+
+    test('T2B chain: 15 Master T2B Qs unlocks T2B title', () {
+      final qs = [
+        for (var i = 0; i < 15; i++)
+          q(cls: AgilityClass.t2b, level: AgilityLevel.master, date: DateTime(2026, 1, 1 + i)),
+      ];
+      final results = RulesEngine().evaluate(qs);
+      final t2b = find(results, 'akc.t2b.t2b');
+      expect(t2b.isUnlocked, isTrue);
+    });
+
     test('MACH unlocks at threshold', () {
       final qs = <Q>[];
       // 20 double-Q days, each with a Std and JWW Master Q worth ~40 mach
