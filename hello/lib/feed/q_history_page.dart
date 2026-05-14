@@ -31,7 +31,9 @@ class _QHistoryPageState extends State<QHistoryPage> {
       builder: (context, _) {
         final cs = Theme.of(context).colorScheme;
         final dogs = widget.repo.dogs;
-        final all = widget.repo.qs..sort((a, b) => b.date.compareTo(a.date));
+        // repo.qs is unmodifiable; make a copy before sorting.
+        final all = [...widget.repo.qs]
+          ..sort((a, b) => b.date.compareTo(a.date));
         final filtered = all.where(_matches).toList();
 
         return Scaffold(
