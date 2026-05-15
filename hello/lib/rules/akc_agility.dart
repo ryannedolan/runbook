@@ -31,6 +31,7 @@ LevelQCountTitle _t({
     );
 
 /// Regular Standard chain: NA → OA → AX → MX → MXB → MXS → MXG → MXC.
+/// Lifetime tier counts (Ch. 2 §3): each tier is the prior tier + 25.
 final regularStandardChain = TitleProgression(
   name: 'Standard',
   titles: [
@@ -40,16 +41,16 @@ final regularStandardChain = TitleProgression(
         cls: AgilityClass.standard, level: AgilityLevel.open, n: 3),
     _t(id: 'akc.std.ax', title: 'AX', description: 'Agility Excellent — 3 Q\'s in Excellent Standard',
         cls: AgilityClass.standard, level: AgilityLevel.excellent, n: 3),
-    _t(id: 'akc.std.mx', title: 'MX', description: 'Master Agility Excellent — 10 Q\'s in Master Standard',
+    _t(id: 'akc.std.mx', title: 'MX', description: 'Master Agility Excellent — 10 Master Standard Q\'s',
         cls: AgilityClass.standard, level: AgilityLevel.master, n: 10),
     _t(id: 'akc.std.mxb', title: 'MXB', description: 'Master Bronze — 25 Master Standard Q\'s',
         cls: AgilityClass.standard, level: AgilityLevel.master, n: 25),
-    _t(id: 'akc.std.mxs', title: 'MXS', description: 'Master Silver — 50 Master Standard Q\'s',
+    _t(id: 'akc.std.mxs', title: 'MXS', description: 'Master Silver — MXB + 25 (50 total)',
         cls: AgilityClass.standard, level: AgilityLevel.master, n: 50),
-    _t(id: 'akc.std.mxg', title: 'MXG', description: 'Master Gold — 100 Master Standard Q\'s',
+    _t(id: 'akc.std.mxg', title: 'MXG', description: 'Master Gold — MXS + 25 (75 total)',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 75),
+    _t(id: 'akc.std.mxc', title: 'MXC', description: 'Master Century — MXG + 25 (100 total)',
         cls: AgilityClass.standard, level: AgilityLevel.master, n: 100),
-    _t(id: 'akc.std.mxc', title: 'MXC', description: 'Master Century — 150 Master Standard Q\'s',
-        cls: AgilityClass.standard, level: AgilityLevel.master, n: 150),
   ],
 );
 
@@ -63,20 +64,25 @@ final regularJwwChain = TitleProgression(
         cls: AgilityClass.jww, level: AgilityLevel.open, n: 3),
     _t(id: 'akc.jww.axj', title: 'AXJ', description: 'Excellent JWW — 3 Q\'s in Excellent JWW',
         cls: AgilityClass.jww, level: AgilityLevel.excellent, n: 3),
-    _t(id: 'akc.jww.mxj', title: 'MXJ', description: 'Master JWW — 10 Q\'s in Master JWW',
+    _t(id: 'akc.jww.mxj', title: 'MXJ', description: 'Master Excellent Jumper — 10 Master JWW Q\'s',
         cls: AgilityClass.jww, level: AgilityLevel.master, n: 10),
     _t(id: 'akc.jww.mjb', title: 'MJB', description: 'Master JWW Bronze — 25 Master JWW Q\'s',
         cls: AgilityClass.jww, level: AgilityLevel.master, n: 25),
-    _t(id: 'akc.jww.mjs', title: 'MJS', description: 'Master JWW Silver — 50 Master JWW Q\'s',
+    _t(id: 'akc.jww.mjs', title: 'MJS', description: 'Master JWW Silver — MJB + 25 (50 total)',
         cls: AgilityClass.jww, level: AgilityLevel.master, n: 50),
-    _t(id: 'akc.jww.mjg', title: 'MJG', description: 'Master JWW Gold — 100 Master JWW Q\'s',
+    _t(id: 'akc.jww.mjg', title: 'MJG', description: 'Master JWW Gold — MJS + 25 (75 total)',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 75),
+    _t(id: 'akc.jww.mjc', title: 'MJC', description: 'Master JWW Century — MJG + 25 (100 total)',
         cls: AgilityClass.jww, level: AgilityLevel.master, n: 100),
-    _t(id: 'akc.jww.mjc', title: 'MJC', description: 'Master JWW Century — 150 Master JWW Q\'s',
-        cls: AgilityClass.jww, level: AgilityLevel.master, n: 150),
   ],
 );
 
-/// Preferred Standard chain: NAP → OAP → AXP → MXP → MXP2 → MXP3 → MXP4 → MXP5.
+/// Preferred Standard chain: NAP → OAP → AXP → MXP → MXP2..5 → MXPB
+/// (lifetime tier) → MXPS → MXPG → MXPC.
+///
+/// Two parallel sub-chains progress on the same Q stream:
+///   • MXP/MXP2/MXP3/... — every +10 Master Std Pref Qs.
+///   • MXPB/MXPS/MXPG/MXPC — lifetime tiers at 25/50/75/100.
 final preferredStandardChain = TitleProgression(
   name: 'Preferred Standard',
   titles: [
@@ -86,20 +92,29 @@ final preferredStandardChain = TitleProgression(
         cls: AgilityClass.standard, level: AgilityLevel.open, n: 3, preferred: true),
     _t(id: 'akc.pstd.axp', title: 'AXP', description: 'Excellent Agility Preferred — 3 Q\'s',
         cls: AgilityClass.standard, level: AgilityLevel.excellent, n: 3, preferred: true),
-    _t(id: 'akc.pstd.mxp', title: 'MXP', description: 'Master Agility Preferred — 10 Q\'s',
+    _t(id: 'akc.pstd.mxp', title: 'MXP', description: 'Master Agility Excellent Preferred — 10 Q\'s',
         cls: AgilityClass.standard, level: AgilityLevel.master, n: 10, preferred: true),
-    _t(id: 'akc.pstd.mxp2', title: 'MXP2', description: 'Master Preferred 2 — 20 Master Preferred Std Q\'s',
+    _t(id: 'akc.pstd.mxp2', title: 'MXP2', description: 'Master Preferred 2 — 20 Master Std Pref Q\'s',
         cls: AgilityClass.standard, level: AgilityLevel.master, n: 20, preferred: true),
-    _t(id: 'akc.pstd.mxp3', title: 'MXP3', description: 'Master Preferred 3 — 30 Master Preferred Std Q\'s',
+    _t(id: 'akc.pstd.mxp3', title: 'MXP3', description: 'Master Preferred 3 — 30 Master Std Pref Q\'s',
         cls: AgilityClass.standard, level: AgilityLevel.master, n: 30, preferred: true),
-    _t(id: 'akc.pstd.mxp4', title: 'MXP4', description: 'Master Preferred 4 — 40 Master Preferred Std Q\'s',
+    _t(id: 'akc.pstd.mxp4', title: 'MXP4', description: 'Master Preferred 4 — 40 Master Std Pref Q\'s',
         cls: AgilityClass.standard, level: AgilityLevel.master, n: 40, preferred: true),
-    _t(id: 'akc.pstd.mxp5', title: 'MXP5', description: 'Master Preferred 5 — 50 Master Preferred Std Q\'s',
+    _t(id: 'akc.pstd.mxp5', title: 'MXP5', description: 'Master Preferred 5 — 50 Master Std Pref Q\'s',
         cls: AgilityClass.standard, level: AgilityLevel.master, n: 50, preferred: true),
+    _t(id: 'akc.pstd.mxpb', title: 'MXPB', description: 'Master Bronze Agility Preferred — 25 Master Std Pref Q\'s',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 25, preferred: true),
+    _t(id: 'akc.pstd.mxps', title: 'MXPS', description: 'Master Silver Agility Preferred — MXPB + 25 (50 total)',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 50, preferred: true),
+    _t(id: 'akc.pstd.mxpg', title: 'MXPG', description: 'Master Gold Agility Preferred — MXPS + 25 (75 total)',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 75, preferred: true),
+    _t(id: 'akc.pstd.mxpc', title: 'MXPC', description: 'Master Century Agility Preferred — MXPG + 25 (100 total)',
+        cls: AgilityClass.standard, level: AgilityLevel.master, n: 100, preferred: true),
   ],
 );
 
-/// Preferred JWW chain: NJP → OJP → AJP → MJP → MJP2 → ... → MJP5.
+/// Preferred JWW chain: NJP → OJP → AJP → MJP → MJP2..5 → MJPB
+/// (lifetime tier) → MJPS → MJPG → MJPC.
 final preferredJwwChain = TitleProgression(
   name: 'Preferred JWW',
   titles: [
@@ -109,7 +124,7 @@ final preferredJwwChain = TitleProgression(
         cls: AgilityClass.jww, level: AgilityLevel.open, n: 3, preferred: true),
     _t(id: 'akc.pjww.ajp', title: 'AJP', description: 'Excellent JWW Preferred — 3 Q\'s',
         cls: AgilityClass.jww, level: AgilityLevel.excellent, n: 3, preferred: true),
-    _t(id: 'akc.pjww.mjp', title: 'MJP', description: 'Master JWW Preferred — 10 Q\'s',
+    _t(id: 'akc.pjww.mjp', title: 'MJP', description: 'Master Excellent Jumper Preferred — 10 Q\'s',
         cls: AgilityClass.jww, level: AgilityLevel.master, n: 10, preferred: true),
     _t(id: 'akc.pjww.mjp2', title: 'MJP2', description: 'Master JWW Preferred 2 — 20 Q\'s',
         cls: AgilityClass.jww, level: AgilityLevel.master, n: 20, preferred: true),
@@ -119,71 +134,140 @@ final preferredJwwChain = TitleProgression(
         cls: AgilityClass.jww, level: AgilityLevel.master, n: 40, preferred: true),
     _t(id: 'akc.pjww.mjp5', title: 'MJP5', description: 'Master JWW Preferred 5 — 50 Q\'s',
         cls: AgilityClass.jww, level: AgilityLevel.master, n: 50, preferred: true),
+    _t(id: 'akc.pjww.mjpb', title: 'MJPB', description: 'Master Bronze JWW Preferred — 25 Q\'s',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 25, preferred: true),
+    _t(id: 'akc.pjww.mjps', title: 'MJPS', description: 'Master Silver JWW Preferred — MJPB + 25 (50 total)',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 50, preferred: true),
+    _t(id: 'akc.pjww.mjpg', title: 'MJPG', description: 'Master Gold JWW Preferred — MJPS + 25 (75 total)',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 75, preferred: true),
+    _t(id: 'akc.pjww.mjpc', title: 'MJPC', description: 'Master Century JWW Preferred — MJPG + 25 (100 total)',
+        cls: AgilityClass.jww, level: AgilityLevel.master, n: 100, preferred: true),
   ],
 );
 
-/// Regular FAST chain: NF → OF → XF → MXF.
+/// Regular FAST chain: NF → OF → XF → MXF → MFB → MFS → MFG → MFC.
+/// Lifetime tiers (Ch. 2 §3) are 25/50/75/100 Master FAST Qs.
 final regularFastChain = TitleProgression(
   name: 'FAST',
   titles: [
-    _t(id: 'akc.fast.nf', title: 'NF', description: 'Novice FAST — 3 Q\'s in Novice FAST',
+    _t(id: 'akc.fast.nf', title: 'NF', description: 'Agility FAST Novice — 3 Novice FAST Q\'s (50+ pts)',
         cls: AgilityClass.fast, level: AgilityLevel.novice, n: 3),
-    _t(id: 'akc.fast.of', title: 'OF', description: 'Open FAST — 3 Q\'s in Open FAST',
+    _t(id: 'akc.fast.of', title: 'OF', description: 'Agility FAST Open — 3 Open FAST Q\'s (55+ pts)',
         cls: AgilityClass.fast, level: AgilityLevel.open, n: 3),
-    _t(id: 'akc.fast.xf', title: 'XF', description: 'Excellent FAST — 3 Q\'s in Excellent FAST',
+    _t(id: 'akc.fast.xf', title: 'XF', description: 'Agility FAST Excellent — 3 Excellent FAST Q\'s (60+ pts)',
         cls: AgilityClass.fast, level: AgilityLevel.excellent, n: 3),
-    _t(id: 'akc.fast.mxf', title: 'MXF', description: 'Master FAST — 10 Q\'s in Master FAST',
+    _t(id: 'akc.fast.mxf', title: 'MXF', description: 'Agility Master FAST Excellent — 10 Master FAST Q\'s',
         cls: AgilityClass.fast, level: AgilityLevel.master, n: 10),
+    _t(id: 'akc.fast.mfb', title: 'MFB', description: 'Master Bronze FAST — 25 Master FAST Q\'s',
+        cls: AgilityClass.fast, level: AgilityLevel.master, n: 25),
+    _t(id: 'akc.fast.mfs', title: 'MFS', description: 'Master Silver FAST — MFB + 25 (50 total)',
+        cls: AgilityClass.fast, level: AgilityLevel.master, n: 50),
+    _t(id: 'akc.fast.mfg', title: 'MFG', description: 'Master Gold FAST — MFS + 25 (75 total)',
+        cls: AgilityClass.fast, level: AgilityLevel.master, n: 75),
+    _t(id: 'akc.fast.mfc', title: 'MFC', description: 'Master Century FAST — MFG + 25 (100 total)',
+        cls: AgilityClass.fast, level: AgilityLevel.master, n: 100),
   ],
 );
 
-/// Preferred FAST chain: NFP → OFP → XFP → MFP.
+/// Preferred FAST chain: NFP → OFP → XFP → MFP → MFPB → MFPS → MFPG → MFPC.
 final preferredFastChain = TitleProgression(
   name: 'FAST Preferred',
   titles: [
-    _t(id: 'akc.fast.nfp', title: 'NFP', description: 'Novice FAST Preferred — 3 Q\'s',
+    _t(id: 'akc.fast.nfp', title: 'NFP', description: 'Agility FAST Novice Preferred — 3 Q\'s',
         cls: AgilityClass.fast, level: AgilityLevel.novice, n: 3, preferred: true),
-    _t(id: 'akc.fast.ofp', title: 'OFP', description: 'Open FAST Preferred — 3 Q\'s',
+    _t(id: 'akc.fast.ofp', title: 'OFP', description: 'Agility FAST Open Preferred — 3 Q\'s',
         cls: AgilityClass.fast, level: AgilityLevel.open, n: 3, preferred: true),
-    _t(id: 'akc.fast.xfp', title: 'XFP', description: 'Excellent FAST Preferred — 3 Q\'s',
+    _t(id: 'akc.fast.xfp', title: 'XFP', description: 'Agility FAST Excellent Preferred — 3 Q\'s',
         cls: AgilityClass.fast, level: AgilityLevel.excellent, n: 3, preferred: true),
-    _t(id: 'akc.fast.mfp', title: 'MFP', description: 'Master FAST Preferred — 10 Q\'s',
+    _t(id: 'akc.fast.mfp', title: 'MFP', description: 'Agility Master FAST Excellent Preferred — 10 Q\'s',
         cls: AgilityClass.fast, level: AgilityLevel.master, n: 10, preferred: true),
+    _t(id: 'akc.fast.mfpb', title: 'MFPB', description: 'Master Bronze FAST Preferred — 25 Q\'s',
+        cls: AgilityClass.fast, level: AgilityLevel.master, n: 25, preferred: true),
+    _t(id: 'akc.fast.mfps', title: 'MFPS', description: 'Master Silver FAST Preferred — MFPB + 25 (50 total)',
+        cls: AgilityClass.fast, level: AgilityLevel.master, n: 50, preferred: true),
+    _t(id: 'akc.fast.mfpg', title: 'MFPG', description: 'Master Gold FAST Preferred — MFPS + 25 (75 total)',
+        cls: AgilityClass.fast, level: AgilityLevel.master, n: 75, preferred: true),
+    _t(id: 'akc.fast.mfpc', title: 'MFPC', description: 'Master Century FAST Preferred — MFPG + 25 (100 total)',
+        cls: AgilityClass.fast, level: AgilityLevel.master, n: 100, preferred: true),
   ],
 );
 
-/// Time 2 Beat (Master only): T2B → T2BCH.
+/// Time 2 Beat: T2B → T2B2 → T2B3 → ... Each cycle adds 15 fresh
+/// qualifying scores. (Rulebook also requires 100 points per cycle —
+/// not enforced today; tracked via Q.score is a TODO.)
 final t2bChain = TitleProgression(
   name: 'T2B',
   titles: [
-    _t(id: 'akc.t2b.t2b', title: 'T2B', description: 'Time 2 Beat — 15 Master T2B Q\'s',
-        cls: AgilityClass.t2b, level: AgilityLevel.master, n: 15),
-    _t(id: 'akc.t2b.t2bch', title: 'T2BCH', description: 'Time 2 Beat Champion — 75 Master T2B Q\'s',
-        cls: AgilityClass.t2b, level: AgilityLevel.master, n: 75),
+    for (var n = 1; n <= 5; n++)
+      _t(
+          id: n == 1 ? 'akc.t2b.t2b' : 'akc.t2b.t2b$n',
+          title: n == 1 ? 'T2B' : 'T2B$n',
+          description: n == 1
+              ? 'Time 2 Beat — 15 T2B Q\'s + 100 points'
+              : 'T2B$n — ${15 * n} T2B Q\'s + ${100 * n} points',
+          cls: AgilityClass.t2b,
+          level: AgilityLevel.master,
+          n: 15 * n),
   ],
 );
 
-/// Time 2 Beat Preferred: T2BP → T2BCHP.
+/// Time 2 Beat Preferred: T2BP → T2BP2 → ...
 final t2bPreferredChain = TitleProgression(
   name: 'T2B Preferred',
   titles: [
-    _t(id: 'akc.t2b.t2bp', title: 'T2BP', description: 'Time 2 Beat Preferred — 15 Master T2B Preferred Q\'s',
-        cls: AgilityClass.t2b, level: AgilityLevel.master, n: 15, preferred: true),
-    _t(id: 'akc.t2b.t2bchp', title: 'T2BCHP', description: 'Time 2 Beat Preferred Champion — 75 Q\'s',
-        cls: AgilityClass.t2b, level: AgilityLevel.master, n: 75, preferred: true),
+    for (var n = 1; n <= 5; n++)
+      _t(
+          id: n == 1 ? 'akc.t2b.t2bp' : 'akc.t2b.t2bp$n',
+          title: n == 1 ? 'T2BP' : 'T2BP$n',
+          description: n == 1
+              ? 'Time 2 Beat Preferred — 15 T2B Pref Q\'s + 100 points'
+              : 'T2BP$n — ${15 * n} T2B Pref Q\'s + ${100 * n} points',
+          cls: AgilityClass.t2b,
+          level: AgilityLevel.master,
+          n: 15 * n,
+          preferred: true),
   ],
 );
 
-/// Premier titles — each chain has just one title for now (PAD, PJD).
+/// Triple Q: TQX (regular) and TQXP (preferred). 10 days where the dog
+/// earned a Master Std + Master JWW + Master FAST Q on the same day.
+final tqxChain = TitleProgression(
+  name: 'TQX',
+  titles: [
+    TripleQTitle(
+      id: 'akc.tqx',
+      title: 'TQX',
+      description: 'Triple Q Excellent — 10 Master Std + JWW + FAST same-day Q\'s',
+      preferred: false,
+    ),
+  ],
+);
+final tqxPreferredChain = TitleProgression(
+  name: 'TQX Preferred',
+  titles: [
+    TripleQTitle(
+      id: 'akc.tqxp',
+      title: 'TQXP',
+      description: 'Triple Q Excellent Preferred — 10 Master Std + JWW + FAST Pref same-day Q\'s',
+      preferred: true,
+    ),
+  ],
+);
+
+/// Premier titles (Ch. 11 §6): PAD/PJD = 25 Q's including 5 from
+/// placing in the top 25% of the dogs in the dog's jump height.
+///
+/// We only enforce the count today; the "5 in top 25%" gate requires
+/// per-Q top-quarter info that the model doesn't yet capture (TODO).
 final premierStandardChain = TitleProgression(
   name: 'Premier Standard',
   titles: [
     PremierCountTitle(
       id: 'akc.premier.pad',
       title: 'PAD',
-      description: 'Premier Standard Dog — 5 Premier Standard Q\'s',
+      description: 'Premier Agility Dog — 25 Premier Std Q\'s (5 in top 25%)',
       agilityClass: AgilityClass.premierStandard,
-      qCountNeeded: 5,
+      qCountNeeded: 25,
     ),
   ],
 );
@@ -193,9 +277,9 @@ final premierJwwChain = TitleProgression(
     PremierCountTitle(
       id: 'akc.premier.pjd',
       title: 'PJD',
-      description: 'Premier JWW Dog — 5 Premier JWW Q\'s',
+      description: 'Premier Jumpers Dog — 25 Premier JWW Q\'s (5 in top 25%)',
       agilityClass: AgilityClass.premierJww,
-      qCountNeeded: 5,
+      qCountNeeded: 25,
     ),
   ],
 );
@@ -232,7 +316,9 @@ final machChain = TitleProgression(
   ],
 );
 
-/// PAX chain — PAX, PAX2, PAX3 (preferred Master).
+/// PAX chain (Ch. 8 §7) — Preferred Agility Excellent. 20 preferred 2Qs
+/// per level. NO points required (this is the distinguishing
+/// characteristic vs. PACH).
 final paxChain = TitleProgression(
   name: 'PAX',
   titles: [
@@ -241,8 +327,27 @@ final paxChain = TitleProgression(
         id: n == 1 ? 'akc.pax' : 'akc.pax$n',
         title: n == 1 ? 'PAX' : 'PAX$n',
         description: n == 1
-            ? 'Preferred Agility Excellent — 750 PACH points + 20 PDQs'
-            : 'PAX$n — ${n * 750} PACH points + ${n * 20} preferred double Qs',
+            ? 'Preferred Agility Excellent — 20 preferred double Qs (no points required)'
+            : 'PAX$n — ${n * 20} preferred double Qs',
+        multiplier: n,
+        preferred: true,
+        pointsPerLevel: 0,
+      ),
+  ],
+);
+
+/// PACH chain (Ch. 8 §8) — Preferred Agility Champion. 750 PACH points
+/// + 20 preferred 2Qs per level. Mirrors MACH for the Preferred division.
+final pachChain = TitleProgression(
+  name: 'PACH',
+  titles: [
+    for (var n = 1; n <= 3; n++)
+      ChampionTitle(
+        id: n == 1 ? 'akc.pach' : 'akc.pach$n',
+        title: n == 1 ? 'PACH' : 'PACH$n',
+        description: n == 1
+            ? 'Preferred Agility Champion — 750 PACH points + 20 preferred double Qs'
+            : 'PACH$n — ${n * 750} PACH points + ${n * 20} preferred double Qs',
         multiplier: n,
         preferred: true,
       ),
@@ -256,11 +361,14 @@ final allAkcChains = <TitleProgression>[
   machChain,
   nacChain,
   regularFastChain,
+  tqxChain,
   t2bChain,
   preferredStandardChain,
   preferredJwwChain,
   paxChain,
+  pachChain,
   preferredFastChain,
+  tqxPreferredChain,
   t2bPreferredChain,
   premierStandardChain,
   premierJwwChain,
@@ -338,7 +446,8 @@ RuleNode akcAgilityTree() => RuleNode.group(
           ),
         ),
 
-        // PAX — needs a preferred Master Q.
+        // PAX + PACH — need a preferred Master Std/JWW Q. PAX is 2Qs
+        // only; PACH is points + 2Qs.
         RuleNode.gated(
           gate: (qs) => qs.any((q) =>
               q.level == AgilityLevel.master &&
@@ -346,9 +455,25 @@ RuleNode akcAgilityTree() => RuleNode.group(
               (q.agilityClass == AgilityClass.standard ||
                   q.agilityClass == AgilityClass.jww)),
           child: RuleNode.group(
-            title: 'PAX',
-            children: [for (final t in paxChain.titles) RuleNode.leaf(t)],
+            title: 'PAX/PACH',
+            children: [
+              for (final t in paxChain.titles) RuleNode.leaf(t),
+              for (final t in pachChain.titles) RuleNode.leaf(t),
+            ],
           ),
+        ),
+
+        // TQX / TQXP — gated on having a Master FAST Q (regular or
+        // preferred), since the Std + JWW components are usually
+        // present once a dog is doing Master FAST.
+        RuleNode.gated(
+          gate: (qs) => qs.any((q) =>
+              q.level == AgilityLevel.master &&
+              q.agilityClass == AgilityClass.fast),
+          child: RuleNode.group(title: 'TQX', children: [
+            for (final t in tqxChain.titles) RuleNode.leaf(t),
+            for (final t in tqxPreferredChain.titles) RuleNode.leaf(t),
+          ]),
         ),
       ],
     );

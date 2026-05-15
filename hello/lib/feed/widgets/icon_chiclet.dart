@@ -217,6 +217,13 @@ _TitleSpec _titleSpecFor(Achievement a) {
       shape: ChicletShape.circle,
     );
   }
+  if (a is TripleQTitle) {
+    return _TitleSpec(
+      icon: Icons.filter_3,
+      background: a.preferred ? Colors.deepPurple.shade500 : Colors.red.shade600,
+      foreground: Colors.amber.shade200,
+    );
+  }
   if (a is PremierCountTitle) {
     return _TitleSpec(
       icon: Icons.workspace_premium,

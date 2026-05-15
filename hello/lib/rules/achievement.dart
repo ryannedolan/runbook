@@ -246,12 +246,17 @@ class PremierCountTitle extends Achievement {
   }
 }
 
-/// Champion titles: MACH (regular Master Std+JWW), PAX (preferred
-/// Master Std+JWW), and their repeated variants (MACH2, MACH3, ...,
-/// PAX2, PAX3, ...).
+/// Champion titles: MACH (regular Master Std+JWW), PACH (preferred
+/// Master Std+JWW with points), PAX (preferred Master Std+JWW —
+/// double-Qs only, NO points required), and their repeated variants.
 ///
-/// Each requires N * 750 championship points and N * 20 double-Qs (Std
-/// + JWW on the same trial day at the respective division+master).
+/// AKC rulebook (Ch. 2 §2, Ch. 8 §7, Ch. 8 §8):
+///   MACH = 750 MACH points + 20 2Qs.   MACHn = n × that.
+///   PACH = 750 PACH points + 20 2Qs.   PACHn = n × that.
+///   PAX  = 20 preferred 2Qs only.       PAXn = n × that.
+///
+/// `pointsPerLevel: 0` makes the points threshold trivially satisfied
+/// (used for PAX).
 class ChampionTitle extends Achievement {
   ChampionTitle({
     required this.id,
@@ -259,6 +264,8 @@ class ChampionTitle extends Achievement {
     required this.description,
     required this.multiplier,
     required this.preferred,
+    this.pointsPerLevel = 750,
+    this.doubleQsPerLevel = 20,
   });
 
   @override
@@ -274,8 +281,10 @@ class ChampionTitle extends Achievement {
 
   /// 1 for MACH/PAX, 2 for MACH2/PAX2, ...
   final int multiplier;
-  int get pointsNeeded => 750 * multiplier;
-  int get doubleQsNeeded => 20 * multiplier;
+  final int pointsPerLevel;
+  final int doubleQsPerLevel;
+  int get pointsNeeded => pointsPerLevel * multiplier;
+  int get doubleQsNeeded => doubleQsPerLevel * multiplier;
 
   @override
   bool acceptsQ(Q q) =>
@@ -476,6 +485,89 @@ class ScentElementLevelTitle extends Achievement {
       achievement: this,
       have: direct.length,
       need: qCountNeeded,
+      contributingQIds: contributing,
+    );
+  }
+}
+
+/// Triple-Q title (TQX / TQXP) — N days where the dog earned a Master
+/// Standard + Master JWW + Master FAST Q on the same calendar day.
+///
+/// Rulebook Ch. 9 §9: TQX = 10 triple-Q days; TQXP = 10 preferred
+/// triple-Q days.
+class TripleQTitle extends Achievement {
+  TripleQTitle({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.preferred,
+    this.tripleQsNeeded = 10,
+  });
+
+  @override
+  final String id;
+  @override
+  final String title;
+  @override
+  final String description;
+  @override
+  String get sport => 'AKC Agility';
+  @override
+  final bool preferred;
+  final int tripleQsNeeded;
+
+  static const _classes = {
+    AgilityClass.standard,
+    AgilityClass.jww,
+    AgilityClass.fast,
+  };
+
+  @override
+  bool acceptsQ(Q q) =>
+      q.level == AgilityLevel.master &&
+      q.preferred == preferred &&
+      _classes.contains(q.agilityClass);
+
+  @override
+  AchievementResult evaluate(List<Q> qs) {
+    final masterQs = qs.where(acceptsQ).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+    final dayMap = <DateTime, Set<AgilityClass>>{};
+    for (final q in masterQs) {
+      final d = DateTime(q.date.year, q.date.month, q.date.day);
+      dayMap.putIfAbsent(d, () => {}).add(q.agilityClass);
+    }
+    final tripleDays = dayMap.entries
+        .where((e) =>
+            e.value.contains(AgilityClass.standard) &&
+            e.value.contains(AgilityClass.jww) &&
+            e.value.contains(AgilityClass.fast))
+        .map((e) => e.key)
+        .toList()
+      ..sort();
+    final contributing = masterQs.map((q) => q.id).toList();
+
+    if (tripleDays.length >= tripleQsNeeded) {
+      final unlockDay = tripleDays[tripleQsNeeded - 1];
+      // Pick the latest Q on the unlock day as the "unlocker".
+      Q? unlocker;
+      for (final q in masterQs) {
+        final d = DateTime(q.date.year, q.date.month, q.date.day);
+        if (d == unlockDay) unlocker = q;
+      }
+      return AchievementResult(
+        achievement: this,
+        have: tripleDays.length,
+        need: tripleQsNeeded,
+        unlockedAt: unlockDay,
+        unlockedByQId: unlocker?.id,
+        contributingQIds: contributing,
+      );
+    }
+    return AchievementResult.inProgress(
+      achievement: this,
+      have: tripleDays.length,
+      need: tripleQsNeeded,
       contributingQIds: contributing,
     );
   }

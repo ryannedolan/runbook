@@ -136,12 +136,12 @@ void main() {
   });
 
   group('Premier titles', () {
-    test('5 Premier Standard Qs unlocks PAD', () {
+    test('25 Premier Standard Qs unlocks PAD', () {
       final qs = [
-        for (var i = 0; i < 5; i++)
+        for (var i = 0; i < 25; i++)
           Q.create(
             dogId: 'd',
-            date: DateTime(2026, 4, i + 1),
+            date: DateTime(2026, 4, 1).add(Duration(days: i)),
             agilityClass: AgilityClass.premierStandard,
             level: AgilityLevel.master,
           ),
