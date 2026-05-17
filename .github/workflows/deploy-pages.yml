@@ -24,6 +24,11 @@ jobs:
 
       - run: flutter pub get
 
+      # Convert data/dogs/*.yaml → assets/dogs/*.json before tests and
+      # build, so the deployed site always reflects the YAML source of
+      # truth even if a contributor forgot to regenerate locally.
+      - run: dart run tool/build_dog_assets.dart
+
       - run: flutter test
 
       - run: flutter build web --release --base-href=/runbook/

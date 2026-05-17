@@ -1,0 +1,1235 @@
+{
+  "akcId": "WS81353104",
+  "callName": "Limelight",
+  "registeredName": "Temerity Li Li",
+  "qs": [
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-05-11",
+      "club": "Leonberger Club of America",
+      "trial": "Trial 1",
+      "element": "Container",
+      "class": "Novice",
+      "section": "A",
+      "place": 5,
+      "search_time": "00:51:47",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "227"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-05-11",
+      "club": "Leonberger Club of America",
+      "trial": "Trial 1",
+      "element": "Exterior",
+      "class": "Novice",
+      "section": "A",
+      "place": 9,
+      "search_time": "01:06:25",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "227"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-05-11",
+      "club": "Leonberger Club of America",
+      "trial": "Trial 1",
+      "element": "Interior",
+      "class": "Novice",
+      "section": "A",
+      "place": 7,
+      "search_time": "01:32:56",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "227"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-05-12",
+      "club": "Leonberger Club of America",
+      "trial": "Trial 1",
+      "element": "Interior",
+      "class": "Novice",
+      "section": "A",
+      "place": 7,
+      "search_time": "01:51:43",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "227"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-06-28",
+      "club": "Mid-Del-Tinker Kennel Club Inc",
+      "trial": "Trial 1",
+      "element": "Exterior",
+      "class": "Novice",
+      "section": "A",
+      "place": 14,
+      "search_time": "02:24.59",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "109"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-06-29",
+      "club": "Mid-Del-Tinker Kennel Club Inc",
+      "trial": "Trial 1",
+      "element": "Container",
+      "class": "Novice",
+      "section": "A",
+      "place": 17,
+      "search_time": "01:00.36",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "109"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-06-30",
+      "club": "Mid-Del-Tinker Kennel Club Inc",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Novice",
+      "section": "A",
+      "place": 9,
+      "search_time": "00:19.43",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "109"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-06-30",
+      "club": "Mid-Del-Tinker Kennel Club Inc",
+      "trial": "Trial 1",
+      "element": "Exterior",
+      "class": "Novice",
+      "section": "A",
+      "place": 9,
+      "search_time": "02:07.41",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "109"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-07-20",
+      "club": "Leonberger Club of America",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Novice",
+      "section": "A",
+      "place": 2,
+      "search_time": "00:37:08",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "128"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-07-21",
+      "club": "Leonberger Club of America",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Novice",
+      "section": "A",
+      "place": 2,
+      "search_time": "00:11:40",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "128"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-07-21",
+      "club": "Leonberger Club of America",
+      "trial": "Trial 1",
+      "element": "Container",
+      "class": "Novice",
+      "section": "A",
+      "place": 4,
+      "search_time": "00:48:61",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "128"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-07-21",
+      "club": "Leonberger Club of America",
+      "trial": "Trial 1",
+      "element": "Handler Discrimination",
+      "class": "Novice",
+      "section": "A",
+      "place": 2,
+      "search_time": "00:10:31",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "128"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-07-21",
+      "club": "Leonberger Club of America",
+      "trial": "Trial 1",
+      "element": "Interior",
+      "class": "Novice",
+      "section": "A",
+      "place": 4,
+      "search_time": "00:47:19",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "128"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2024-08-10",
+      "club": "Alamo Brittany Club",
+      "class": "JWW",
+      "level": "NOV B",
+      "jump_height": 16,
+      "yards": 121.0,
+      "sct": 44.0,
+      "time": 37.52,
+      "score": 90,
+      "place": 1,
+      "yps": 3.225,
+      "armband": "16011"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-09-29",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Exterior",
+      "class": "Advanced",
+      "place": 14,
+      "search_time": "02:29.99",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "187"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-09-29",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Handler Discrimination",
+      "class": "Novice",
+      "section": "A",
+      "place": 4,
+      "search_time": "00:30.97",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "187"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-10-06",
+      "club": "Leonberger Club of America",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Novice",
+      "section": "B",
+      "place": 6,
+      "search_time": "00:24.28",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "242"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-10-06",
+      "club": "Leonberger Club of America",
+      "trial": "Trial 1",
+      "element": "Container",
+      "class": "Novice",
+      "section": "B",
+      "place": 11,
+      "search_time": "00:25.75",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "242"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2024-10-18",
+      "club": "English Cocker Spaniel Club of America",
+      "class": "JWW",
+      "level": "NOV B",
+      "jump_height": 16,
+      "yards": 120.0,
+      "sct": 44.0,
+      "time": 35.79,
+      "score": 100,
+      "place": 1,
+      "yps": 3.353,
+      "armband": "16018"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2024-10-19",
+      "club": "English Cocker Spaniel Club of America",
+      "class": "JWW",
+      "level": "NOV B",
+      "jump_height": 16,
+      "yards": 120.0,
+      "sct": 44.0,
+      "time": 33.15,
+      "score": 100,
+      "place": 1,
+      "yps": 3.62,
+      "armband": "16018"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-11-03",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Container",
+      "class": "Novice",
+      "section": "B",
+      "place": 5,
+      "search_time": "01:07.46",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "194"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-11-03",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Exterior",
+      "class": "Novice",
+      "section": "B",
+      "place": 5,
+      "search_time": "01:50.38",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "194"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2024-11-03",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Interior",
+      "class": "Novice",
+      "section": "B",
+      "place": 4,
+      "search_time": "01:19.53",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "194"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2024-12-06",
+      "club": "Alamo Area Shetland Sheepdog Club",
+      "class": "FAST",
+      "level": "NOV B",
+      "jump_height": 16,
+      "sct": 35.0,
+      "time": 28.34,
+      "score": 59,
+      "place": 1,
+      "armband": "16009"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2024-12-06",
+      "club": "Alamo Area Shetland Sheepdog Club",
+      "class": "JWW",
+      "level": "OPEN",
+      "jump_height": 16,
+      "yards": 136.0,
+      "sct": 42.0,
+      "time": 46.66,
+      "score": 87,
+      "place": 1,
+      "yps": 2.915,
+      "armband": "16009"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2024-12-08",
+      "club": "Alamo Area Shetland Sheepdog Club",
+      "class": "FAST",
+      "level": "NOV B",
+      "jump_height": 16,
+      "sct": 35.0,
+      "time": 26.37,
+      "score": 60,
+      "place": 1,
+      "armband": "16009"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2024-12-28",
+      "club": "Hill Country Agility Club",
+      "class": "FAST",
+      "level": "NOV B",
+      "jump_height": 16,
+      "sct": 35.0,
+      "time": 39.6,
+      "score": 66,
+      "place": 1,
+      "armband": "16007"
+    },
+    {
+      "sport": "fastcat",
+      "venue": "AKC",
+      "date": "2025-01-18",
+      "club": "Alamo Dog Obedience Club, Inc.",
+      "trial": "Trial 2",
+      "class": "Single",
+      "place": 4,
+      "handicap": 1.5,
+      "time": 8.38,
+      "mph": 24.41,
+      "points": 36.615,
+      "armband": "149"
+    },
+    {
+      "sport": "fastcat",
+      "venue": "AKC",
+      "date": "2025-01-18",
+      "club": "Alamo Dog Obedience Club, Inc.",
+      "trial": "Trial 1",
+      "class": "Single",
+      "place": 3,
+      "handicap": 1.5,
+      "time": 8.15,
+      "mph": 25.1,
+      "points": 37.65,
+      "armband": "149"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2025-03-02",
+      "club": "Alamo Dog Obedience Club",
+      "class": "FAST",
+      "level": "NOV B",
+      "jump_height": 16,
+      "sct": 35.0,
+      "time": 32.7,
+      "score": 68,
+      "place": 1,
+      "armband": "16012"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2025-03-22",
+      "club": "Hill Country Agility Club",
+      "class": "STD",
+      "level": "NOV B",
+      "jump_height": 16,
+      "yards": 133.0,
+      "sct": 67.0,
+      "time": 79.08,
+      "score": 88,
+      "place": 2,
+      "yps": 1.682,
+      "armband": "16007"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2025-04-11",
+      "club": "Hill Country Agility Club",
+      "class": "STD",
+      "level": "NOV B",
+      "jump_height": 16,
+      "yards": 131.0,
+      "sct": 66.0,
+      "time": 52.02,
+      "score": 100,
+      "place": 1,
+      "yps": 2.518,
+      "armband": "16007"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-05-03",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Exterior",
+      "class": "Advanced",
+      "place": 8,
+      "search_time": "02:59.99",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "195"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-05-03",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Novice",
+      "section": "B",
+      "place": 5,
+      "search_time": "01:13.11",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "195"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-05-03",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Container",
+      "class": "Novice",
+      "section": "B",
+      "place": 6,
+      "search_time": "01:23.51",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "195"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-05-04",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Container",
+      "class": "Advanced",
+      "place": 14,
+      "search_time": "01:06.19",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "195"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-05-04",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Handler Discrimination",
+      "class": "Advanced",
+      "place": 3,
+      "search_time": "00:13.84",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "195"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-05-04",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Novice",
+      "section": "B",
+      "place": 3,
+      "search_time": "00:14.40",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "195"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-05-04",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Container",
+      "class": "Novice",
+      "section": "B",
+      "place": 5,
+      "search_time": "01:10.91",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "195"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-05-04",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Handler Discrimination",
+      "class": "Novice",
+      "section": "B",
+      "place": 1,
+      "search_time": "00:04.97",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "195"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-05-04",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Interior",
+      "class": "Novice",
+      "section": "B",
+      "place": 4,
+      "search_time": "01:43.53",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "195"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2025-05-11",
+      "club": "Greater Kerville Kennel Club",
+      "class": "JWW",
+      "level": "OPEN",
+      "jump_height": 16,
+      "yards": 133.0,
+      "sct": 41.0,
+      "time": 45.93,
+      "score": 87,
+      "place": 1,
+      "yps": 2.896,
+      "armband": "16010"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2025-05-11",
+      "club": "Greater Kerville Kennel Club",
+      "class": "STD",
+      "level": "NOV B",
+      "jump_height": 16,
+      "yards": 136.0,
+      "sct": 68.0,
+      "time": 75.24,
+      "score": 88,
+      "place": 1,
+      "yps": 1.808,
+      "armband": "16010"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2025-05-31",
+      "club": "Alamo Area Shetland Sheepdog Club",
+      "class": "JWW",
+      "level": "OPEN",
+      "jump_height": 16,
+      "yards": 141.0,
+      "sct": 43.0,
+      "time": 44.8,
+      "score": 98,
+      "place": 1,
+      "yps": 3.147,
+      "armband": "16009"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2025-05-31",
+      "club": "Alamo Area Shetland Sheepdog Club",
+      "class": "STD",
+      "level": "OPEN",
+      "jump_height": 16,
+      "yards": 171.0,
+      "sct": 73.0,
+      "time": 75.31,
+      "score": 91,
+      "place": 1,
+      "yps": 2.271,
+      "armband": "16009"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2025-07-19",
+      "club": "Hill Country Agility Club",
+      "class": "JWW",
+      "level": "OPEN",
+      "jump_height": 16,
+      "yards": 138.0,
+      "sct": 42.0,
+      "time": 42.0,
+      "score": 100,
+      "place": 1,
+      "yps": 3.286,
+      "armband": "16006"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2025-07-19",
+      "club": "Hill Country Agility Club",
+      "class": "STD",
+      "level": "OPEN",
+      "jump_height": 16,
+      "yards": 166.0,
+      "sct": 71.0,
+      "time": 66.56,
+      "score": 95,
+      "place": 1,
+      "yps": 2.494,
+      "armband": "16006"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-09-27",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Handler Discrimination",
+      "class": "Advanced",
+      "place": 5,
+      "search_time": "00:58.50",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "146"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-09-27",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Novice",
+      "section": "B",
+      "place": 10,
+      "search_time": "01:52.78",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "146"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-09-27",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Container",
+      "class": "Novice",
+      "section": "B",
+      "place": 10,
+      "search_time": "01:09.00",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "146"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-09-27",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Handler Discrimination",
+      "class": "Novice",
+      "section": "B",
+      "place": 2,
+      "search_time": "00:10.94",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "146"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-09-27",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Interior",
+      "class": "Novice",
+      "section": "B",
+      "place": 13,
+      "search_time": "00:58.03",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "146"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-09-28",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Handler Discrimination",
+      "class": "Advanced",
+      "place": 4,
+      "search_time": "01:03.59",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "146"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-09-28",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Interior",
+      "class": "Advanced",
+      "place": 13,
+      "search_time": "02:21.22",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "146"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-09-28",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Novice",
+      "section": "B",
+      "place": 10,
+      "search_time": "01:09.63",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "146"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-09-28",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Handler Discrimination",
+      "class": "Novice",
+      "section": "B",
+      "place": 5,
+      "search_time": "00:46.79",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "146"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-09-28",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Interior",
+      "class": "Novice",
+      "section": "B",
+      "place": 11,
+      "search_time": "00:44.85",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "146"
+    },
+    {
+      "sport": "fastcat",
+      "venue": "AKC",
+      "date": "2025-10-11",
+      "club": "Alamo Dog Obedience Club, Inc.",
+      "trial": "Trial 2",
+      "class": "Single",
+      "place": 2,
+      "handicap": 1.5,
+      "time": 8.46,
+      "mph": 24.18,
+      "points": 36.27,
+      "armband": "133"
+    },
+    {
+      "sport": "fastcat",
+      "venue": "AKC",
+      "date": "2025-10-11",
+      "club": "Alamo Dog Obedience Club, Inc.",
+      "trial": "Trial 1",
+      "class": "Single",
+      "place": 2,
+      "handicap": 1.5,
+      "time": 8.38,
+      "mph": 24.41,
+      "points": 36.615,
+      "armband": "133"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-11-01",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Advanced",
+      "place": 12,
+      "search_time": "02:04:91",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "180"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-11-01",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Exterior",
+      "class": "Novice",
+      "section": "B",
+      "place": 9,
+      "search_time": "02:16:62",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "180"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-11-01",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Interior",
+      "class": "Novice",
+      "section": "B",
+      "place": 8,
+      "search_time": "01:21:11",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "180"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2025-11-02",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Container",
+      "class": "Novice",
+      "section": "B",
+      "place": 5,
+      "search_time": "00:10:55",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "180"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2025-12-07",
+      "club": "Alamo Area Shetland Sheepdog Club",
+      "class": "STD",
+      "level": "OPEN",
+      "jump_height": 16,
+      "yards": 156.0,
+      "sct": 67.0,
+      "time": 63.62,
+      "score": 100,
+      "place": 1,
+      "yps": 2.452,
+      "armband": "16067"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2025-12-07",
+      "club": "Alamo Area Shetland Sheepdog Club",
+      "class": "T2B",
+      "level": "REG",
+      "jump_height": 16,
+      "sct": 31.02,
+      "time": 52.42,
+      "score": 3,
+      "armband": "16067"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2026-02-01",
+      "club": "Alamo Brittany Club",
+      "class": "STD",
+      "level": "EX",
+      "jump_height": 16,
+      "yards": 188.0,
+      "sct": 66.0,
+      "time": 68.62,
+      "score": 94,
+      "place": 1,
+      "yps": 2.74,
+      "armband": "16085"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2026-02-07",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Handler Discrimination",
+      "class": "Excellent",
+      "place": 1,
+      "search_time": "00:13.10",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "226"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2026-02-07",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Novice",
+      "section": "B",
+      "place": 11,
+      "search_time": "00:50.69",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "226"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2026-02-08",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Container",
+      "class": "Advanced",
+      "place": 6,
+      "search_time": "02:00.00",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "226"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2026-02-08",
+      "club": "Scent Work Austin Texas Club",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Novice",
+      "section": "B",
+      "place": 5,
+      "search_time": "01:20.00",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "226"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2026-04-10",
+      "club": "Hill Country Agility Club",
+      "class": "T2B",
+      "level": "REG",
+      "jump_height": 16,
+      "sct": 32.56,
+      "time": 45.55,
+      "score": 6,
+      "armband": "16069"
+    },
+    {
+      "sport": "agility",
+      "venue": "AKC",
+      "date": "2026-04-11",
+      "club": "Hill Country Agility Club",
+      "class": "T2B",
+      "level": "REG",
+      "jump_height": 16,
+      "sct": 31.69,
+      "time": 51.38,
+      "score": 3,
+      "armband": "16069"
+    },
+    {
+      "sport": "scent work",
+      "venue": "AKC",
+      "date": "2026-05-02",
+      "club": "Bexar County Kennel Club",
+      "trial": "Trial 1",
+      "element": "Buried",
+      "class": "Advanced",
+      "place": 10,
+      "search_time": "01:21.35",
+      "faults": {
+        "handler": 0,
+        "safety": 0,
+        "disruption": 0
+      },
+      "armband": "238"
+    }
+  ]
+}

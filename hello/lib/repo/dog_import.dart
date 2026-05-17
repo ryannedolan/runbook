@@ -1,9 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/services.dart' show AssetManifest, rootBundle;
 import 'package:uuid/uuid.dart';
 
 import '../models/q.dart';
 
-/// One Q parsed from a YAML asset, paired with the metadata we need to
+/// One Q parsed from a dataset, paired with the metadata we need to
 /// dedupe / attribute it.
 class ImportedQ {
   ImportedQ({required this.q, required this.dedupeKey});
@@ -11,7 +13,7 @@ class ImportedQ {
   final String dedupeKey;
 }
 
-/// Header for an asset (parsed from the leading `# ...` comments).
+/// Header for a dataset.
 class DogDataset {
   DogDataset({
     required this.akcId,
@@ -23,7 +25,7 @@ class DogDataset {
   final String? registeredName;
 }
 
-/// What we found inside `assets/dogs/*.yaml`, indexed by AKC ID.
+/// What we found inside `assets/dogs/*.json`, indexed by AKC ID.
 class DatasetIndex {
   DatasetIndex(this.byAkcId);
   final Map<String, DogDataset> byAkcId;
@@ -37,60 +39,44 @@ class DatasetIndex {
   }
 }
 
-/// List every `assets/dogs/*.yaml` and read the header comments. We
-/// only parse the full file when we actually need to import a dog.
+/// List every `assets/dogs/*.json` and read its header. We parse Qs on
+/// demand only when a dog actually needs to be backfilled.
 Future<DatasetIndex> loadDatasetIndex() async {
   final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
   final paths = manifest
       .listAssets()
-      .where((p) => p.startsWith('assets/dogs/') && p.endsWith('.yaml'))
+      .where((p) => p.startsWith('assets/dogs/') && p.endsWith('.json'))
       .toList();
   final out = <String, DogDataset>{};
   for (final path in paths) {
     final raw = await rootBundle.loadString(path);
-    final header = _parseHeader(raw);
-    final akcId = header['akc number'] ??
-        // Filename fallback: `assets/dogs/<akcId>.yaml`.
-        path.split('/').last.replaceAll('.yaml', '');
+    final obj = jsonDecode(raw) as Map<String, dynamic>;
+    final akcId = (obj['akcId'] as String?) ??
+        path.split('/').last.replaceAll('.json', '');
     out[akcId] = DogDataset(
       akcId: akcId,
-      callName: header['call name'],
-      registeredName: header['registered name'],
+      callName: obj['callName'] as String?,
+      registeredName: obj['registeredName'] as String?,
     );
   }
   return DatasetIndex(out);
 }
 
-/// Parse the leading `# Key: Value` lines. Stops at the first non-`#`
-/// line. Keys are lowercased.
-Map<String, String> _parseHeader(String raw) {
-  final out = <String, String>{};
-  for (final line in raw.split('\n')) {
-    if (line.isEmpty) continue;
-    if (!line.startsWith('#')) break;
-    final stripped = line.substring(1).trim();
-    final i = stripped.indexOf(':');
-    if (i < 0) continue;
-    out[stripped.substring(0, i).trim().toLowerCase()] =
-        stripped.substring(i + 1).trim();
-  }
-  return out;
-}
-
-/// Read & parse `assets/dogs/$akcId.yaml`. Returns the Qs we know how
-/// to model (AKC agility/scentwork/FastCAT). Non-AKC records (e.g. ASCA
-/// agility, Barn Hunt) and elements we don't model (e.g. Handler
-/// Discrimination) are skipped.
+/// Read & parse `assets/dogs/$akcId.json`. Returns the Qs we know how
+/// to model (AKC agility/scentwork/FastCAT). Non-AKC records (e.g.
+/// ASCA agility, Barn Hunt) and elements we don't model (e.g. Handler
+/// Discrimination) are silently skipped.
 Future<List<ImportedQ>> loadQsForAkcId(String akcId, String dogId) async {
-  final raw = await rootBundle.loadString('assets/dogs/$akcId.yaml');
-  return parseDogYaml(raw, dogId: dogId);
+  final raw = await rootBundle.loadString('assets/dogs/$akcId.json');
+  return parseDogJson(raw, dogId: dogId);
 }
 
-List<ImportedQ> parseDogYaml(String raw, {required String dogId}) {
+List<ImportedQ> parseDogJson(String raw, {required String dogId}) {
+  final obj = jsonDecode(raw) as Map<String, dynamic>;
+  final qs = (obj['qs'] as List<dynamic>?) ?? const <dynamic>[];
   final out = <ImportedQ>[];
-  for (final block in _splitDocs(raw)) {
-    final m = _parseBlock(block);
-    if (m.isEmpty) continue;
+  for (final rec in qs) {
+    final m = rec as Map<String, dynamic>;
     final q = _qFromMap(m, dogId: dogId);
     if (q == null) continue;
     out.add(ImportedQ(q: q, dedupeKey: dedupeKeyFor(q)));
@@ -104,8 +90,7 @@ List<ImportedQ> parseDogYaml(String raw, {required String dogId}) {
 /// imported record without breaking dedupe.
 ///
 /// Trial number matters because FastCAT dogs routinely run two trials
-/// on the same day — every other field is identical. Manual entries
-/// today don't carry a trial; for them the trial slot is "-".
+/// on the same day — every other field is identical.
 String dedupeKeyFor(Q q) {
   final d = q.date;
   final day =
@@ -124,55 +109,7 @@ String dedupeKeyFor(Q q) {
 }
 
 // ---------------------------------------------------------------------------
-// Tiny YAML reader. The agent emits a very narrow subset: multi-doc
-// (`---` separators) with flat `key: value` pairs plus a single nested
-// `faults:` block we ignore. No need to pull in the full yaml package.
-// ---------------------------------------------------------------------------
-
-Iterable<String> _splitDocs(String raw) sync* {
-  final lines = raw.split('\n');
-  final buf = <String>[];
-  for (final line in lines) {
-    if (line.startsWith('#')) continue;
-    if (line.trim() == '---') {
-      if (buf.isNotEmpty) yield buf.join('\n');
-      buf.clear();
-      continue;
-    }
-    buf.add(line);
-  }
-  if (buf.isNotEmpty) yield buf.join('\n');
-}
-
-Map<String, dynamic> _parseBlock(String block) {
-  final out = <String, dynamic>{};
-  for (final raw in block.split('\n')) {
-    if (raw.trim().isEmpty) continue;
-    // Skip nested children (anything indented). Top-level keys only.
-    if (raw.startsWith(' ') || raw.startsWith('\t')) continue;
-    final i = raw.indexOf(':');
-    if (i < 0) continue;
-    final key = raw.substring(0, i).trim();
-    final rawVal = raw.substring(i + 1).trim();
-    if (rawVal.isEmpty) continue; // nested block header (e.g. `faults:`)
-    out[key] = _unquote(rawVal);
-  }
-  return out;
-}
-
-String _unquote(String s) {
-  if (s.length >= 2) {
-    final first = s[0];
-    final last = s[s.length - 1];
-    if ((first == "'" && last == "'") || (first == '"' && last == '"')) {
-      return s.substring(1, s.length - 1);
-    }
-  }
-  return s;
-}
-
-// ---------------------------------------------------------------------------
-// Field-mapping. The agent's vocabulary is a touch looser than the
+// Field-mapping. The dataset's vocabulary is a touch looser than the
 // app's enums; normalize here.
 // ---------------------------------------------------------------------------
 
@@ -356,7 +293,6 @@ Q? _scentworkQ(
 }
 
 DateTime? _parseDate(String s) {
-  // YAML dates land here as ISO strings (`2024-05-11`).
   final parts = s.split('-');
   if (parts.length != 3) return DateTime.tryParse(s);
   final y = int.tryParse(parts[0]);
@@ -386,14 +322,10 @@ double? _parseSearchTime(String? s) {
   if (s == null) return null;
   final t = s.trim();
   if (t.isEmpty) return null;
-  // Replace stray `:` between seconds and hundredths with `.`, then
-  // split. Examples we need to handle: "01:06.65", "01:06:65", "00:33:04".
   final fields = t.split(RegExp(r'[:\.]'));
   if (fields.length < 2) return double.tryParse(t);
   final ints = fields.map(int.tryParse).toList();
   if (ints.any((v) => v == null)) return null;
-  // last field is hundredths, second-to-last is seconds. Earlier
-  // fields are minutes (and optionally hours).
   final hundredths = ints.last!;
   final seconds = ints[ints.length - 2]!;
   var minutes = 0;
