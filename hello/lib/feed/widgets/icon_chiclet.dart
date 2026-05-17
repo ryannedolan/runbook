@@ -77,6 +77,12 @@ class QRibbonChiclet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final placement = q.placement;
+    // AKC awards ribbons for 1st–4th only. Beyond 4th (common in
+    // scentwork and FastCAT, where placement counts every qualifying
+    // dog) the placement number isn't a ribbon-worthy distinction, so
+    // we render just the green Q ribbon.
+    final showPlacement =
+        placement != null && placement >= 1 && placement <= 4;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -85,7 +91,7 @@ class QRibbonChiclet extends StatelessWidget {
           background: _qColor(),
           size: size,
         ),
-        if (placement != null) ...[
+        if (showPlacement) ...[
           SizedBox(width: size * 0.15),
           PlacementChiclet(placement: placement, size: size),
         ],

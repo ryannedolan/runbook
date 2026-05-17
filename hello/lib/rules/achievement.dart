@@ -25,9 +25,9 @@ class AchievementResult {
   final String? unlockedByQId;
 
   /// If unlocked by implication (a higher-level Q implies all
-  /// prior-level titles), this is the level of the implying Q. Null if
-  /// unlocked directly.
-  final AgilityLevel? impliedBy;
+  /// prior-level titles), this is the human-readable level label of the
+  /// implying Q (e.g. "Master", "Detective"). Null if unlocked directly.
+  final String? impliedBy;
 
   /// All Qs that count toward this achievement, in chronological order.
   /// Used by the detail view to surface contributing runs.
@@ -174,7 +174,7 @@ class LevelQCountTitle extends Achievement {
         need: qCountNeeded,
         unlockedAt: q.date,
         unlockedByQId: q.id,
-        impliedBy: q.level,
+        impliedBy: q.level.label,
         contributingQIds: contributing,
       );
     }
@@ -481,6 +481,34 @@ class ScentElementLevelTitle extends Achievement {
         contributingQIds: contributing,
       );
     }
+
+    // Implication: AKC Scentwork classes are progressive (Novice →
+    // Advanced → Excellent → Master → Detective). A Q at any higher
+    // level in the same element implies every lower-level title at
+    // that element has already been earned. Mirrors the agility
+    // LevelQCountTitle behavior so handlers don't need to backfill
+    // every lower-level Q manually.
+    final higher = qs
+        .where((q) =>
+            q.sport == Sport.scentwork &&
+            q.scentElement == element &&
+            q.scentLevel != null &&
+            q.scentLevel!.rank > level.rank)
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+    if (higher.isNotEmpty) {
+      final q = higher.first;
+      return AchievementResult(
+        achievement: this,
+        have: direct.length,
+        need: qCountNeeded,
+        unlockedAt: q.date,
+        unlockedByQId: q.id,
+        impliedBy: q.scentLevel!.label,
+        contributingQIds: contributing,
+      );
+    }
+
     return AchievementResult.inProgress(
       achievement: this,
       have: direct.length,

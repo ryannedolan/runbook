@@ -129,9 +129,8 @@ class AchievementCard extends StatelessWidget {
     final r = item.result;
     if (r.isUnlocked) {
       final when = DateFormat.yMMMd().format(r.unlockedAt!);
-      final impliedSuffix = r.impliedBy != null
-          ? ' (implied by ${r.impliedBy!.label} Q)'
-          : '';
+      final impliedSuffix =
+          r.impliedBy != null ? ' (implied by ${r.impliedBy} Q)' : '';
       return Row(
         children: [
           Icon(Icons.check_circle, size: 16, color: Colors.green.shade600),

@@ -60,14 +60,14 @@ void main() {
       final axj = find(results, 'akc.jww.axj');
 
       expect(naj.isUnlocked, isTrue);
-      expect(naj.impliedBy, AgilityLevel.master);
+      expect(naj.impliedBy, 'Master');
       expect(naj.unlockedAt, masterDate);
 
       expect(oaj.isUnlocked, isTrue);
-      expect(oaj.impliedBy, AgilityLevel.master);
+      expect(oaj.impliedBy, 'Master');
 
       expect(axj.isUnlocked, isTrue);
-      expect(axj.impliedBy, AgilityLevel.master);
+      expect(axj.impliedBy, 'Master');
     });
 
     test('An Excellent JWW Q implies NAJ and OAJ but not AXJ', () {
@@ -79,6 +79,61 @@ void main() {
       expect(find(results, 'akc.jww.oaj').isUnlocked, isTrue);
       expect(find(results, 'akc.jww.axj').isUnlocked, isFalse);
       expect(find(results, 'akc.jww.axj').have, 1);
+    });
+
+    test(
+        'A Master scentwork Q implies Novice / Advanced / Excellent at the same element',
+        () {
+      final masterDate = DateTime(2026, 5, 1);
+      final qs = [
+        Q.create(
+          dogId: 'dog1',
+          date: masterDate,
+          // Placeholder agility class/level — scentwork Qs ignore them.
+          agilityClass: AgilityClass.fast,
+          level: AgilityLevel.novice,
+          sport: Sport.scentwork,
+          scentElement: ScentElement.container,
+          scentLevel: ScentLevel.master,
+        ),
+      ];
+      final results = RulesEngine().evaluate(qs);
+      final novice = find(results, 'akc.sw.container.novice');
+      final advanced = find(results, 'akc.sw.container.advanced');
+      final excellent = find(results, 'akc.sw.container.excellent');
+      final master = find(results, 'akc.sw.container.master');
+      expect(novice.isUnlocked, isTrue);
+      expect(novice.impliedBy, 'Master');
+      expect(advanced.isUnlocked, isTrue);
+      expect(advanced.impliedBy, 'Master');
+      expect(excellent.isUnlocked, isTrue);
+      expect(excellent.impliedBy, 'Master');
+      // The Master title itself needs 3 direct Qs — not implied.
+      expect(master.isUnlocked, isFalse);
+      expect(master.have, 1);
+    });
+
+    test(
+        'Implication is scoped to the same element — Container Master does '
+        'not imply Interior Novice',
+        () {
+      final qs = [
+        Q.create(
+          dogId: 'dog1',
+          date: DateTime(2026, 5, 1),
+          agilityClass: AgilityClass.fast,
+          level: AgilityLevel.novice,
+          sport: Sport.scentwork,
+          scentElement: ScentElement.container,
+          scentLevel: ScentLevel.master,
+        ),
+      ];
+      final results = RulesEngine().evaluate(qs);
+      // No Interior Qs → Interior chain shouldn't surface at all.
+      expect(
+        results.where((r) => r.achievement.id.startsWith('akc.sw.interior.')),
+        isEmpty,
+      );
     });
 
     test('Std and JWW are independent', () {

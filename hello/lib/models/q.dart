@@ -55,6 +55,15 @@ extension ScentLevelX on ScentLevel {
         ScentLevel.master => 'M',
         ScentLevel.detective => 'D',
       };
+  /// Ascending difficulty: novice=0 → detective=4. Used by the rules
+  /// engine to imply lower titles from a higher-level Q.
+  int get rank => switch (this) {
+        ScentLevel.novice => 0,
+        ScentLevel.advanced => 1,
+        ScentLevel.excellent => 2,
+        ScentLevel.master => 3,
+        ScentLevel.detective => 4,
+      };
 }
 
 /// AKC agility classes we currently model. Easy to extend.

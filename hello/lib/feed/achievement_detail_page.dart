@@ -119,7 +119,7 @@ class AchievementDetailPage extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Unlocked ${DateFormat.yMMMd().format(r.unlockedAt!)}'
-                  '${r.impliedBy != null ? '\n(Implied by a ${r.impliedBy!.label} Q)' : ''}',
+                  '${r.impliedBy != null ? '\n(Implied by a ${r.impliedBy} Q)' : ''}',
                   style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ),

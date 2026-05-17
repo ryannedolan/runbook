@@ -14,11 +14,15 @@ List<TipFeedItem> buildTipsForDog({
   Repo? repo,
 }) {
   final out = <TipFeedItem>[];
+  final now = DateTime.now();
 
-  // Pickup reminders — one per recently-unlocked title.
+  // Pickup reminders — one per recently-unlocked title, gated to the
+  // last 30 days. Older titles are assumed to already be in hand (or
+  // permanently lost) and a reminder for a months-old ribbon is noise.
   for (final r in results) {
     if (!r.isUnlocked) continue;
     if (r.impliedBy != null) continue; // implied titles don't have ribbons
+    if (now.difference(r.unlockedAt!).inDays > 30) continue;
     if (repo != null && repo.isRibbonCollected(dog.id, r.achievement.id)) {
       continue;
     }
@@ -41,7 +45,6 @@ List<TipFeedItem> buildTipsForDog({
     if (r.isUnlocked) continue;
     if (r.need - r.have != 1) continue;
     if (r.need <= 0) continue;
-    final now = DateTime.now();
     out.add(TipFeedItem(
       id: '${dog.id}.almost.${r.achievement.id}',
       timestamp: now,
