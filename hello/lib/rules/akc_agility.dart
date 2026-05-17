@@ -1,5 +1,7 @@
 import '../models/q.dart';
 import 'achievement.dart';
+import 'akc_fastcat.dart';
+import 'akc_scentwork.dart';
 import 'engine.dart';
 
 // ---------------------------------------------------------------------------
@@ -375,10 +377,15 @@ final allAkcChains = <TitleProgression>[
 ];
 
 /// Look up the chain that contains a given achievement, if any.
+/// Scans agility, scentwork, and FastCAT progressions.
 TitleProgression? chainOf(Achievement a) {
   for (final c in allAkcChains) {
     if (c.titles.contains(a)) return c;
   }
+  for (final c in allScentChains) {
+    if (c.titles.contains(a)) return c;
+  }
+  if (fastCATChain.titles.contains(a)) return fastCATChain;
   return null;
 }
 

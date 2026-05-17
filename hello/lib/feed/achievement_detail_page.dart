@@ -200,11 +200,29 @@ class AchievementDetailPage extends StatelessWidget {
                 title: chain.titles[idx],
                 result: rOf(chain.titles[idx]),
                 isCurrent: idx == i,
+                onTap: idx == i
+                    ? null
+                    : () => _openChainTitle(context, chain.titles[idx], qs),
               ),
           ],
         ),
         const SizedBox(height: 24),
       ],
+    );
+  }
+
+  /// Navigate to another title in the chain. We always evaluate the
+  /// tapped achievement directly (rather than relying on the engine's
+  /// hasProgress filter) so the user can drill into far-future titles
+  /// with zero contributing Qs and still see "0 of N" with the chain
+  /// context intact.
+  void _openChainTitle(BuildContext context, Achievement title, List<Q> qs) {
+    final result = title.evaluate(qs);
+    final next = AchievementFeedItem(dog: item.dog, result: result, allQs: qs);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AchievementDetailPage(repo: repo, item: next),
+      ),
     );
   }
 
@@ -352,10 +370,12 @@ class _ChainPill extends StatelessWidget {
     required this.title,
     required this.result,
     required this.isCurrent,
+    this.onTap,
   });
   final Achievement title;
   final AchievementResult? result;
   final bool isCurrent;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -373,7 +393,7 @@ class _ChainPill extends StatelessWidget {
       bg = cs.surfaceContainerHighest;
       fg = cs.onSurfaceVariant;
     }
-    return Container(
+    final pill = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: bg,
@@ -406,6 +426,12 @@ class _ChainPill extends StatelessWidget {
             ),
         ],
       ),
+    );
+    if (onTap == null) return pill;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: pill,
     );
   }
 }
