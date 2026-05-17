@@ -72,6 +72,8 @@ class _AddQPageState extends State<AddQPage> {
           case Sport.fastCAT:
             await _ctrl.answer(q.date, context);
             if (!mounted) return;
+            await _ctrl.answer(q.trial ?? '', context);
+            if (!mounted) return;
             await _ctrl.answer(q.placement, context);
             if (!mounted) return;
             await _ctrl.answer(q.score?.toDouble(), context);
@@ -260,6 +262,13 @@ class _AddQPageState extends State<AddQPage> {
         input: DateInputStep(initial: DateTime.now()),
       );
     }
+    if (!a.containsKey('trial')) {
+      return ConvoStep(
+        key: 'trial',
+        prompt: 'Which trial? (optional — e.g. Trial 1)',
+        input: TextInputStep(hint: 'Trial 1', allowSkip: true),
+      );
+    }
     if (!a.containsKey('placement')) {
       return ConvoStep(
         key: 'placement',
@@ -386,6 +395,7 @@ class _AddQPageState extends State<AddQPage> {
     int machPoints;
     ScentElement? scentElement;
     ScentLevel? scentLevel;
+    String? trial;
 
     switch (sport) {
       case Sport.akcAgility:
@@ -399,6 +409,7 @@ class _AddQPageState extends State<AddQPage> {
         machPoints = (a['machPoints'] as num?)?.toInt() ?? 0;
         scentElement = null;
         scentLevel = null;
+        trial = null;
         break;
       case Sport.fastCAT:
         cls = AgilityClass.fast; // placeholder
@@ -408,6 +419,8 @@ class _AddQPageState extends State<AddQPage> {
         machPoints = 0;
         scentElement = null;
         scentLevel = null;
+        final t = (a['trial'] as String?)?.trim();
+        trial = (t == null || t.isEmpty) ? null : t;
         break;
       case Sport.scentwork:
         cls = AgilityClass.fast; // placeholder
@@ -417,6 +430,7 @@ class _AddQPageState extends State<AddQPage> {
         machPoints = 0;
         scentElement = a['scentElement'] as ScentElement?;
         scentLevel = a['scentLevel'] as ScentLevel?;
+        trial = null;
         break;
     }
 
@@ -444,6 +458,8 @@ class _AddQPageState extends State<AddQPage> {
         clearScentElement: scentElement == null,
         scentLevel: scentLevel,
         clearScentLevel: scentLevel == null,
+        trial: trial,
+        clearTrial: trial == null,
       );
       await widget.repo.updateQ(updated);
       if (mounted) Navigator.of(context).pop(1);
@@ -464,6 +480,7 @@ class _AddQPageState extends State<AddQPage> {
       machPoints: machPoints,
       scentElement: scentElement,
       scentLevel: scentLevel,
+      trial: trial,
     );
     await widget.repo.addQ(q);
     _savedCount++;

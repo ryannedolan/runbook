@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../models/dog.dart';
@@ -34,6 +36,8 @@ class _AddDogPageState extends State<AddDogPage> {
         if (!mounted) return;
         await _ctrl.answer(d.heightInches, context);
         if (!mounted) return;
+        await _ctrl.answer(d.akcId ?? '', context);
+        if (!mounted) return;
         await _ctrl.answer(d.notes ?? '', context);
       });
     }
@@ -63,6 +67,14 @@ class _AddDogPageState extends State<AddDogPage> {
         input: NumberInputStep(hint: 'e.g. 21', suffix: ' in'),
       );
     }
+    if (!a.containsKey('akcId')) {
+      return ConvoStep(
+        key: 'akcId',
+        prompt: "AKC registration #? (optional — lets the app backfill "
+            "Qs for you)",
+        input: TextInputStep(hint: 'e.g. PAL285213', allowSkip: true),
+      );
+    }
     if (!a.containsKey('notes')) {
       return ConvoStep(
         key: 'notes',
@@ -74,6 +86,7 @@ class _AddDogPageState extends State<AddDogPage> {
       final name = a['callName'] as String;
       final breed = _nonEmpty(a['breed'] as String?);
       final height = (a['heightInches'] as num?)?.toDouble();
+      final akcId = _nonEmpty(a['akcId'] as String?);
       final dup = widget.repo.dogByName(name);
       final replacingExisting =
           dup != null && (widget.editing == null || dup.id != widget.editing!.id);
@@ -81,6 +94,7 @@ class _AddDogPageState extends State<AddDogPage> {
         name,
         ?breed,
         if (height != null) '${height.toStringAsFixed(height == height.toInt() ? 0 : 1)} in',
+        if (akcId != null) 'AKC $akcId',
       ].join(' • ');
       final prompt = replacingExisting
           ? "I'll update the existing $name with these details:\n$summary"
@@ -109,13 +123,22 @@ class _AddDogPageState extends State<AddDogPage> {
       return;
     }
     final base = widget.editing;
+    final newAkcId = _nonEmpty(a['akcId'] as String?);
     final dog = (base ?? Dog.create(callName: a['callName'] as String)).copyWith(
       callName: a['callName'] as String,
       breed: _nonEmpty(a['breed'] as String?),
       heightInches: (a['heightInches'] as num?)?.toDouble(),
       notes: _nonEmpty(a['notes'] as String?),
+      akcId: newAkcId,
+      clearAkcId: newAkcId == null,
     );
     final result = await widget.repo.upsertDog(dog);
+    // If we just set or changed the AKC ID, kick the backfill so the
+    // dog's static-file Qs land without an app restart.
+    if (newAkcId != null && newAkcId != base?.akcId) {
+      // Fire and forget — repo notifies listeners when Qs land.
+      unawaited(widget.repo.backfillFromAssets());
+    }
     if (mounted) Navigator.of(context).pop(result);
   }
 

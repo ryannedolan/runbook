@@ -8,6 +8,7 @@ class Dog {
     this.heightInches,
     this.dateOfBirth,
     this.notes,
+    this.akcId,
   });
 
   final String id;
@@ -17,12 +18,18 @@ class Dog {
   final DateTime? dateOfBirth;
   final String? notes;
 
+  /// AKC registration number (e.g. "PAL285213"). When present, the app
+  /// looks for `assets/dogs/$akcId.yaml` at startup and backfills any
+  /// Qs from that file the local db doesn't already have.
+  final String? akcId;
+
   factory Dog.create({
     required String callName,
     String? breed,
     double? heightInches,
     DateTime? dateOfBirth,
     String? notes,
+    String? akcId,
   }) {
     return Dog(
       id: const Uuid().v4(),
@@ -31,6 +38,7 @@ class Dog {
       heightInches: heightInches,
       dateOfBirth: dateOfBirth,
       notes: notes,
+      akcId: akcId,
     );
   }
 
@@ -40,6 +48,8 @@ class Dog {
     double? heightInches,
     DateTime? dateOfBirth,
     String? notes,
+    String? akcId,
+    bool clearAkcId = false,
   }) => Dog(
     id: id,
     callName: callName ?? this.callName,
@@ -47,6 +57,7 @@ class Dog {
     heightInches: heightInches ?? this.heightInches,
     dateOfBirth: dateOfBirth ?? this.dateOfBirth,
     notes: notes ?? this.notes,
+    akcId: clearAkcId ? null : (akcId ?? this.akcId),
   );
 
   Map<String, dynamic> toJson() => {
@@ -56,6 +67,7 @@ class Dog {
     if (heightInches != null) 'heightInches': heightInches,
     if (dateOfBirth != null) 'dateOfBirth': dateOfBirth!.toIso8601String(),
     if (notes != null) 'notes': notes,
+    if (akcId != null) 'akcId': akcId,
   };
 
   factory Dog.fromJson(Map<String, dynamic> json) => Dog(
@@ -67,5 +79,6 @@ class Dog {
         ? DateTime.parse(json['dateOfBirth'] as String)
         : null,
     notes: json['notes'] as String?,
+    akcId: json['akcId'] as String?,
   );
 }

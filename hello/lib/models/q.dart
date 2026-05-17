@@ -128,6 +128,7 @@ class Q {
     this.machPoints = 0,
     this.scentElement,
     this.scentLevel,
+    this.trial,
     this.notes,
   });
 
@@ -163,6 +164,12 @@ class Q {
   /// MACH/PACH championship points. Counts toward MACH (regular Master)
   /// or PAX (Preferred Master) depending on [preferred].
   final int machPoints;
+
+  /// Trial identifier within an event weekend (e.g. "Trial 1", "Trial 2").
+  /// Carried through from the import datasets so we can dedupe the
+  /// common "two FastCAT trials on the same day" case where every other
+  /// field is identical. Null when unknown (manual entries today).
+  final String? trial;
   final String? notes;
 
   factory Q.create({
@@ -179,6 +186,7 @@ class Q {
     int machPoints = 0,
     ScentElement? scentElement,
     ScentLevel? scentLevel,
+    String? trial,
     String? notes,
   }) {
     return Q(
@@ -196,6 +204,7 @@ class Q {
       machPoints: machPoints,
       scentElement: scentElement,
       scentLevel: scentLevel,
+      trial: trial,
       notes: notes,
     );
   }
@@ -228,6 +237,8 @@ class Q {
     bool clearScentElement = false,
     ScentLevel? scentLevel,
     bool clearScentLevel = false,
+    String? trial,
+    bool clearTrial = false,
     String? notes,
   }) => Q(
     id: id,
@@ -244,6 +255,7 @@ class Q {
     machPoints: machPoints ?? this.machPoints,
     scentElement: clearScentElement ? null : (scentElement ?? this.scentElement),
     scentLevel: clearScentLevel ? null : (scentLevel ?? this.scentLevel),
+    trial: clearTrial ? null : (trial ?? this.trial),
     notes: notes ?? this.notes,
   );
 
@@ -262,6 +274,7 @@ class Q {
     if (machPoints != 0) 'machPoints': machPoints,
     if (scentElement != null) 'scentElement': scentElement!.name,
     if (scentLevel != null) 'scentLevel': scentLevel!.name,
+    if (trial != null) 'trial': trial,
     if (notes != null) 'notes': notes,
   };
 
@@ -286,6 +299,7 @@ class Q {
     scentLevel: json['scentLevel'] is String
         ? ScentLevel.values.byName(json['scentLevel'] as String)
         : null,
+    trial: json['trial'] as String?,
     notes: json['notes'] as String?,
   );
 }

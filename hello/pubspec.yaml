@@ -61,6 +61,12 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Static Q datasets, one YAML per AKC ID. An external agentic
+  # workflow generates these from emails/PDFs and commits them; the app
+  # reads them at startup to backfill Qs for known dogs.
+  assets:
+    - assets/dogs/
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

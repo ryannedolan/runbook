@@ -1,0 +1,88 @@
+# AKC Number: MA39001001
+# Call name: Geddy Lee
+# Registered name: Geddy Lee
+# Qualifying runs: 6
+---
+sport: agility
+venue: AKC
+date: 2015-11-15
+club: Tri County Agility Club of Missouri
+class: JWW
+level: Novice A
+judge: Ben Gibbs
+jump_height: 12
+yards: 0
+sct: 0
+time: 30.11
+score: 100
+place: 1
+---
+sport: agility
+venue: AKC
+date: 2015-11-15
+club: Tri County Agility Club of Missouri
+class: STD
+level: Novice A
+judge: Ben Gibbs
+jump_height: 12
+yards: 0
+sct: 0
+time: 41.41
+score: 100
+place: 1
+---
+sport: agility
+venue: AKC
+date: 2015-11-28
+club: Gateway Agility Club of Suburban St Louis
+class: STD
+level: Novice A
+judge: Cynthia Blanton
+jump_height: 12
+yards: 153
+sct: 82
+time: 82.12
+score: 100
+place: 1
+---
+sport: agility
+venue: AKC
+date: 2016-04-30
+club: Show Me Agility Club of Central Missouri
+class: JWW
+level: Novice A
+judge: Mary Mullen
+jump_height: 12
+yards: 132
+sct: 53
+time: 39.17
+score: 95
+place: 1
+---
+sport: agility
+venue: AKC
+date: 2016-05-01
+club: Show Me Agility Club of Central Missouri
+class: JWW
+level: Novice A
+judge: Mary Mullen
+jump_height: 12
+yards: 128
+sct: 51
+time: 42.13
+score: 90
+place: 2
+---
+sport: agility
+venue: AKC
+date: 2016-05-01
+club: Show Me Agility Club of Central Missouri
+class: STD
+level: Novice A
+judge: Mary Mullen
+jump_height: 12
+yards: 153
+sct: 82
+time: 52.21
+score: 100
+place: 1

@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/dog.dart';
 import '../models/q.dart';
+import 'dog_import.dart';
 
 class Repo extends ChangeNotifier {
   Repo._(this._prefs);
@@ -233,6 +234,67 @@ class Repo extends ChangeNotifier {
     _collectedRibbons.remove('$dogId::$achievementId');
     await _saveCollected();
     notifyListeners();
+  }
+
+  /// Pull Qs from `assets/dogs/<akcId>.yaml` for any dog whose AKC ID
+  /// matches. Idempotent — Qs are deduped by event identity (date +
+  /// dog + sport + class/level/element/preferred). Also auto-links a
+  /// dog to an asset by call name on first run, so existing dogs get
+  /// backfilled without any UI work.
+  ///
+  /// `loader` lets tests inject a fake dataset index + record loader.
+  Future<int> backfillFromAssets({
+    Future<DatasetIndex> Function()? loadIndex,
+    Future<List<ImportedQ>> Function(String akcId, String dogId)? loadQs,
+  }) async {
+    final indexFn = loadIndex ?? loadDatasetIndex;
+    final qsFn = loadQs ?? loadQsForAkcId;
+    DatasetIndex index;
+    try {
+      index = await indexFn();
+    } catch (_) {
+      // No manifest / no dataset bundle — fine, just skip.
+      return 0;
+    }
+    if (index.byAkcId.isEmpty) return 0;
+
+    // 1) Auto-link any unlinked dog whose call name matches a dataset.
+    var linkedAny = false;
+    for (var i = 0; i < _dogs.length; i++) {
+      final d = _dogs[i];
+      if (d.akcId != null) continue;
+      final match = index.bestMatchByName(d.callName);
+      if (match == null) continue;
+      _dogs[i] = d.copyWith(akcId: match.akcId);
+      linkedAny = true;
+    }
+    if (linkedAny) await _saveDogs();
+
+    // 2) For each dog with an AKC ID, import new Qs.
+    final existingKeys = <String>{for (final q in _qs) dedupeKeyFor(q)};
+    final fresh = <Q>[];
+    for (final d in _dogs) {
+      final akcId = d.akcId;
+      if (akcId == null) continue;
+      if (!index.byAkcId.containsKey(akcId)) continue;
+      List<ImportedQ> records;
+      try {
+        records = await qsFn(akcId, d.id);
+      } catch (_) {
+        continue;
+      }
+      for (final r in records) {
+        if (existingKeys.add(r.dedupeKey)) fresh.add(r.q);
+      }
+    }
+    if (fresh.isEmpty) {
+      if (linkedAny) notifyListeners();
+      return 0;
+    }
+    _qs.addAll(fresh);
+    await _saveQs();
+    notifyListeners();
+    return fresh.length;
   }
 
   /// Seed-data helper for first launch / testing.
