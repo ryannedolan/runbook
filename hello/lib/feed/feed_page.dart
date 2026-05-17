@@ -8,6 +8,7 @@ import '../repo/repo.dart';
 import '../rules/engine.dart';
 import 'achievement_detail_page.dart';
 import 'analytics.dart';
+import 'analytics_detail_page.dart';
 import 'card_widget.dart';
 import 'dog_profile_page.dart';
 import 'feed_items.dart';
@@ -193,6 +194,7 @@ class FeedPage extends StatelessWidget {
             isPinned: repo.isPinned(item.cardId),
             onTogglePin: () => repo.togglePin(item.cardId),
             onDogTap: () => _onDogTap(context, item.dog),
+            onOpen: () => _onOpenAnalytics(context, item),
           ),
         ));
         i++;
@@ -243,6 +245,7 @@ class FeedPage extends StatelessWidget {
           isPinned: true,
           onTogglePin: () => repo.togglePin(item.cardId),
           onDogTap: () => _onDogTap(context, item.dog),
+          onOpen: () => _onOpenAnalytics(context, item),
         ),
       );
     }
@@ -357,6 +360,14 @@ class FeedPage extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => AchievementDetailPage(repo: repo, item: item),
+      ),
+    );
+  }
+
+  void _onOpenAnalytics(BuildContext context, AnalyticsFeedItem item) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AnalyticsDetailPage(repo: repo, item: item),
       ),
     );
   }

@@ -276,20 +276,29 @@ final premierJwwChain = TitleProgression(
   ],
 );
 
-/// NAC qualification chain — one achievement per recent qualification year.
-/// Each achievement evaluates its own window (Sep–Aug). Future years
-/// remain in-progress until the dog qualifies; old years stay unlocked.
-List<NACQualificationTitle> _nacTitles() {
+/// NAC qualification chain — one achievement per recent qualification
+/// year, regular and preferred. Each achievement evaluates its own
+/// window (Dec 1, year-2 → Nov 30, year-1). Future years remain
+/// in-progress until the dog qualifies; old years stay unlocked.
+List<NACQualificationTitle> _nacTitles({required bool preferred}) {
   final thisYear = DateTime.now().year;
   // Surface the prior year (so we don't lose freshly-finished seasons),
   // this year, and next year.
   return [
     for (var y = thisYear - 1; y <= thisYear + 1; y++)
-      NACQualificationTitle(qualificationYear: y),
+      NACQualificationTitle(qualificationYear: y, preferred: preferred),
   ];
 }
 
-final nacChain = TitleProgression(name: 'NAC', titles: _nacTitles());
+final nacChain = TitleProgression(
+  name: 'NAC',
+  titles: _nacTitles(preferred: false),
+);
+
+final nacPreferredChain = TitleProgression(
+  name: 'NAC Preferred',
+  titles: _nacTitles(preferred: true),
+);
 
 /// Champion-family tiers — MACH, PACH, PAX. Each tier shares the same
 /// underlying point/QQ pool, just with multiplied thresholds.
@@ -559,6 +568,10 @@ RuleNode akcAgilityTree() => RuleNode.group(
               RuleNode.dynamic(
                 emit: (qs) => emitChampionTiers(qs, ChampionFamily.pach),
               ),
+              // Preferred NAC reuses the same MACH-points + QQ
+              // machinery, gated alongside (only fires for dogs
+              // running Preferred Master Std/JWW).
+              for (final t in nacPreferredChain.titles) RuleNode.leaf(t),
             ],
           ),
         ),

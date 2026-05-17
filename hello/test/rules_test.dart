@@ -311,40 +311,97 @@ void main() {
       expect(scn.isUnlocked, isTrue);
     });
 
-    test('NAC qualifies on 4 QQs + 400 MACH points in window', () {
-      final year = DateTime.now().year;
-      // Build 4 calendar days each with a Master Std and a Master JWW Q,
-      // total MACH points >= 400.
+    test('NAC qualifies on 7 QQs + 550 MACH points in window (2027 rules)', () {
+      // NAC 2027 window: Dec 1, 2025 - Nov 30, 2026.
+      // Build 7 calendar days each with a Master Std + Master JWW,
+      // total MACH points >= 550.
       final qs = <Q>[];
-      for (var i = 0; i < 4; i++) {
-        final d = DateTime(year, 5, 1 + i);
+      for (var i = 0; i < 7; i++) {
+        final d = DateTime(2026, 5, 1 + i);
         qs.add(Q.create(
           dogId: 'dog1',
           date: d,
           agilityClass: AgilityClass.standard,
           level: AgilityLevel.master,
-          machPoints: 60,
+          machPoints: 40,
         ));
         qs.add(Q.create(
           dogId: 'dog1',
           date: d,
           agilityClass: AgilityClass.jww,
           level: AgilityLevel.master,
-          machPoints: 60,
+          machPoints: 40,
         ));
       }
-      // Top up points past 400 with a 5th solo Master Std Q.
+      // Top up points past 550 with a solo Master Std Q.
       qs.add(Q.create(
         dogId: 'dog1',
-        date: DateTime(year, 6, 1),
+        date: DateTime(2026, 6, 1),
         agilityClass: AgilityClass.standard,
         level: AgilityLevel.master,
         machPoints: 30,
       ));
       final results = RulesEngine().evaluate(qs);
       final nac = results.firstWhere(
-          (r) => r.achievement.id == 'akc.nac.$year');
+          (r) => r.achievement.id == 'akc.nac.2027');
       expect(nac.isUnlocked, isTrue);
+    });
+
+    test('NAC: each Premier leg adds 15 NAC points', () {
+      // 5 DQ days + 2 Premier STD + 2 Premier JWW. That's 5 + 2 (pair
+      // substitution) = 7 effective QQs. Points: 5 days × (40+40) = 400
+      // from masters + 4 premier × 15 = 60. Total 460 — short. Add a few
+      // bonus master Qs to get past 550.
+      final qs = <Q>[];
+      for (var i = 0; i < 5; i++) {
+        final d = DateTime(2026, 5, 1 + i);
+        qs.add(Q.create(dogId: 'd', date: d, agilityClass: AgilityClass.standard, level: AgilityLevel.master, machPoints: 40));
+        qs.add(Q.create(dogId: 'd', date: d, agilityClass: AgilityClass.jww, level: AgilityLevel.master, machPoints: 40));
+      }
+      qs.add(Q.create(dogId: 'd', date: DateTime(2026, 6, 1), agilityClass: AgilityClass.premierStandard, level: AgilityLevel.master));
+      qs.add(Q.create(dogId: 'd', date: DateTime(2026, 6, 2), agilityClass: AgilityClass.premierStandard, level: AgilityLevel.master));
+      qs.add(Q.create(dogId: 'd', date: DateTime(2026, 6, 3), agilityClass: AgilityClass.premierJww, level: AgilityLevel.master));
+      qs.add(Q.create(dogId: 'd', date: DateTime(2026, 6, 4), agilityClass: AgilityClass.premierJww, level: AgilityLevel.master));
+      // Bonus master Q's to push points past 550.
+      for (var i = 0; i < 4; i++) {
+        qs.add(Q.create(dogId: 'd', date: DateTime(2026, 7, 1 + i), agilityClass: AgilityClass.standard, level: AgilityLevel.master, machPoints: 50));
+      }
+      final results = RulesEngine().evaluate(qs);
+      final nac = results.firstWhere((r) => r.achievement.id == 'akc.nac.2027');
+      expect(nac.isUnlocked, isTrue);
+    });
+
+    test('NAC Preferred qualifies separately from regular', () {
+      // 7 preferred DQ days + enough PACH points.
+      final qs = <Q>[];
+      for (var i = 0; i < 7; i++) {
+        final d = DateTime(2026, 4, 1 + i);
+        qs.add(Q.create(
+          dogId: 'd',
+          date: d,
+          agilityClass: AgilityClass.standard,
+          level: AgilityLevel.master,
+          preferred: true,
+          machPoints: 50,
+        ));
+        qs.add(Q.create(
+          dogId: 'd',
+          date: d,
+          agilityClass: AgilityClass.jww,
+          level: AgilityLevel.master,
+          preferred: true,
+          machPoints: 50,
+        ));
+      }
+      final results = RulesEngine().evaluate(qs);
+      final preferredNac = results.firstWhere(
+          (r) => r.achievement.id == 'akc.nac.preferred.2027');
+      expect(preferredNac.isUnlocked, isTrue);
+      // Regular NAC should NOT be unlocked — no regular master Qs.
+      expect(
+        results.where((r) => r.achievement.id == 'akc.nac.2027' && r.isUnlocked),
+        isEmpty,
+      );
     });
 
     test('T2B chain: 15 Master T2B Qs unlocks T2B title', () {

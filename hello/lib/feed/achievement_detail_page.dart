@@ -93,8 +93,10 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
                 ),
               if (viewedAchievement.id != activeAchievement.id)
                 _viewingBanner(context, viewedAchievement, activeAchievement),
-              _qsSection(context, viewedResult, qs, dog.id),
+              // Stats first — Qs lists can run long for high-tier
+              // titles and shouldn't bury the summary.
               _statsSection(context, viewedResult, qs),
+              _qsSection(context, viewedResult, qs, dog.id),
               const SizedBox(height: 24),
               TextButton.icon(
                 onPressed: () {
@@ -422,6 +424,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
         ),
         const SizedBox(height: 8),
         Wrap(spacing: 8, runSpacing: 8, children: tiles),
+        const SizedBox(height: 24),
       ],
     );
   }

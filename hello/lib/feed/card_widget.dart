@@ -521,12 +521,14 @@ class AnalyticsCard extends StatelessWidget {
     required this.isPinned,
     required this.onTogglePin,
     required this.onDogTap,
+    this.onOpen,
   });
 
   final AnalyticsFeedItem item;
   final bool isPinned;
   final VoidCallback onTogglePin;
   final VoidCallback onDogTap;
+  final VoidCallback? onOpen;
 
   AnalyticsChicletKind get _chicletKind => switch (item.kind) {
         AnalyticsKind.personalBest => AnalyticsChicletKind.personalBest,
@@ -539,8 +541,11 @@ class AnalyticsCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Card(
       elevation: 0,
+      clipBehavior: Clip.antiAlias,
       color: cs.secondaryContainer.withValues(alpha: 0.6),
-      child: Padding(
+      child: InkWell(
+        onTap: onOpen,
+        child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 8, 14),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -647,6 +652,7 @@ class AnalyticsCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

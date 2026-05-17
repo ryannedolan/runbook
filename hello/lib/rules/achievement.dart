@@ -602,105 +602,149 @@ class TripleQTitle extends Achievement {
 }
 
 /// Qualification for the AKC National Agility Championship for a given
-/// year. Window is Sep 1 (year-1) through Aug 31 (year), inclusive.
-/// Composite criterion: enough MACH points AND enough double-Qs (where
-/// a Premier Q counts as half a double-Q for simplicity).
+/// year. Rules vary slightly year-to-year; defaults here track the 2027
+/// rules published at akccompanionevents.com.
 ///
-/// AKC's exact formula varies year to year; these are reasonable
-/// defaults you can tweak per chain.
+/// 2027 (Tulsa, March 11–14):
+///   * Window: Dec 1 (year-2) through Nov 30 (year-1).
+///   * 7 double-Q's from Master Std + Master JWW on the same day.
+///   * 550 total MACH/PACH + Premier points
+///     (every Premier leg in the window adds 15 NAC points).
+///   * Up to 2 DQ's may be substituted by Premier pairs — each pair of
+///     (1 Premier STD + 1 Premier JWW, not necessarily same trial)
+///     replaces one DQ. The PSTD/PJWW legs can come from any trial in
+///     the window.
+///   * Preferred has its own parallel qualification (same numbers,
+///     evaluated against the Preferred divisions independently).
 class NACQualificationTitle extends Achievement {
   NACQualificationTitle({
     required this.qualificationYear,
-    this.pointsNeeded = 400,
-    this.qqsNeeded = 4,
+    this.preferred = false,
+    this.pointsNeeded = 550,
+    this.qqsNeeded = 7,
+    this.premierPointValue = 15,
+    this.maxPremierDqSubstitutes = 2,
   });
 
   final int qualificationYear;
   final int pointsNeeded;
   final int qqsNeeded;
+  final int premierPointValue;
+  final int maxPremierDqSubstitutes;
 
-  DateTime get windowStart => DateTime(qualificationYear - 1, 9, 1);
+  @override
+  final bool preferred;
+
+  /// Dec 1 of (year-2) — e.g. window for NAC 2027 starts Dec 1, 2025.
+  DateTime get windowStart => DateTime(qualificationYear - 2, 12, 1);
+
+  /// Nov 30 of (year-1) — e.g. window for NAC 2027 ends Nov 30, 2026.
   DateTime get windowEnd =>
-      DateTime(qualificationYear, 8, 31, 23, 59, 59);
+      DateTime(qualificationYear - 1, 11, 30, 23, 59, 59);
 
   @override
-  String get id => 'akc.nac.$qualificationYear';
+  String get id =>
+      'akc.nac${preferred ? ".preferred" : ""}.$qualificationYear';
   @override
-  String get title => 'NAC $qualificationYear';
+  String get title =>
+      preferred ? 'NAC Pref $qualificationYear' : 'NAC $qualificationYear';
   @override
-  String get description =>
-      'Qualified for the AKC National Agility Championship $qualificationYear';
+  String get description => preferred
+      ? 'Qualified for the AKC National Agility Championship $qualificationYear (Preferred)'
+      : 'Qualified for the AKC National Agility Championship $qualificationYear';
   @override
   String get sport => 'AKC Agility';
-  @override
-  bool get preferred => false;
 
   bool _inWindow(Q q) =>
       !q.date.isBefore(windowStart) && !q.date.isAfter(windowEnd);
 
+  bool _isMasterStdOrJww(Q q) =>
+      q.level == AgilityLevel.master &&
+      (q.agilityClass == AgilityClass.standard ||
+          q.agilityClass == AgilityClass.jww);
+
+  bool _isPremierStdOrJww(Q q) =>
+      q.agilityClass == AgilityClass.premierStandard ||
+      q.agilityClass == AgilityClass.premierJww;
+
   @override
   bool acceptsQ(Q q) {
     if (!_inWindow(q)) return false;
-    if (q.preferred) return false;
-    if (q.level != AgilityLevel.master) return false;
-    return q.agilityClass == AgilityClass.standard ||
-        q.agilityClass == AgilityClass.jww ||
-        q.agilityClass == AgilityClass.premierStandard ||
-        q.agilityClass == AgilityClass.premierJww;
+    if (q.preferred != preferred) return false;
+    return _isMasterStdOrJww(q) || _isPremierStdOrJww(q);
   }
 
   @override
   AchievementResult evaluate(List<Q> qs) {
     final inWindow = qs.where(acceptsQ).toList()
       ..sort((a, b) => a.date.compareTo(b.date));
-    final points = inWindow.fold<int>(0, (s, q) => s + q.machPoints);
 
-    // Double-Qs: a calendar day with at least one Master Std AND one
-    // Master JWW Q. A Premier Q on its own counts as a half double-Q.
-    final dayMap = <DateTime, Set<AgilityClass>>{};
+    // Points: MACH/PACH points on master std/jww Q's, plus 15 per
+    // Premier leg (regardless of class — both PSTD and PJWW pay 15).
+    var totalPoints = 0;
     for (final q in inWindow) {
+      if (_isMasterStdOrJww(q)) totalPoints += q.machPoints;
+      if (_isPremierStdOrJww(q)) totalPoints += premierPointValue;
+    }
+
+    // Double-Q days: a calendar day with at least one Master Std AND
+    // one Master JWW Q.
+    final dayMap = <DateTime, Set<AgilityClass>>{};
+    for (final q in inWindow.where(_isMasterStdOrJww)) {
       final d = DateTime(q.date.year, q.date.month, q.date.day);
       dayMap.putIfAbsent(d, () => {}).add(q.agilityClass);
     }
-    var doubleQs = 0;
-    var premierHalves = 0;
-    for (final classes in dayMap.values) {
-      if (classes.contains(AgilityClass.standard) &&
-          classes.contains(AgilityClass.jww)) {
-        doubleQs++;
-      }
-      if (classes.contains(AgilityClass.premierStandard) ||
-          classes.contains(AgilityClass.premierJww)) {
-        premierHalves++;
-      }
-    }
-    final effectiveQQs = doubleQs + (premierHalves / 2).floor();
+    final doubleQs = dayMap.values
+        .where((cs) =>
+            cs.contains(AgilityClass.standard) &&
+            cs.contains(AgilityClass.jww))
+        .length;
+
+    // Premier DQ substitution. Each pair of (1 PSTD + 1 PJWW) in the
+    // window swaps in for 1 DQ, capped at maxPremierDqSubstitutes.
+    final premierStd = inWindow
+        .where((q) => q.agilityClass == AgilityClass.premierStandard)
+        .length;
+    final premierJww = inWindow
+        .where((q) => q.agilityClass == AgilityClass.premierJww)
+        .length;
+    final premierPairs = premierStd < premierJww ? premierStd : premierJww;
+    final premierSubs = premierPairs < maxPremierDqSubstitutes
+        ? premierPairs
+        : maxPremierDqSubstitutes;
+    final effectiveQQs = doubleQs + premierSubs;
+
     final contributing = inWindow.map((q) => q.id).toList();
 
-    if (points >= pointsNeeded && effectiveQQs >= qqsNeeded) {
-      // Walk in chronological order to find when both thresholds were
-      // simultaneously satisfied.
+    if (totalPoints >= pointsNeeded && effectiveQQs >= qqsNeeded) {
+      // Walk chronologically to find the first Q that simultaneously
+      // crossed both thresholds.
       var runningPoints = 0;
-      final dayClasses = <DateTime, Set<AgilityClass>>{};
+      var runningPstd = 0;
+      var runningPjww = 0;
+      final runningDayMap = <DateTime, Set<AgilityClass>>{};
       Q? unlocker;
       for (final q in inWindow) {
-        runningPoints += q.machPoints;
-        final d = DateTime(q.date.year, q.date.month, q.date.day);
-        dayClasses.putIfAbsent(d, () => {}).add(q.agilityClass);
-        var dqs = 0;
-        var halves = 0;
-        for (final cs in dayClasses.values) {
-          if (cs.contains(AgilityClass.standard) &&
-              cs.contains(AgilityClass.jww)) {
-            dqs++;
-          }
-          if (cs.contains(AgilityClass.premierStandard) ||
-              cs.contains(AgilityClass.premierJww)) {
-            halves++;
-          }
+        if (_isMasterStdOrJww(q)) runningPoints += q.machPoints;
+        if (_isPremierStdOrJww(q)) runningPoints += premierPointValue;
+        if (q.agilityClass == AgilityClass.premierStandard) runningPstd++;
+        if (q.agilityClass == AgilityClass.premierJww) runningPjww++;
+        if (_isMasterStdOrJww(q)) {
+          final d = DateTime(q.date.year, q.date.month, q.date.day);
+          runningDayMap.putIfAbsent(d, () => {}).add(q.agilityClass);
         }
-        final eff = dqs + (halves / 2).floor();
-        if (runningPoints >= pointsNeeded && eff >= qqsNeeded) {
+        final runningDqs = runningDayMap.values
+            .where((cs) =>
+                cs.contains(AgilityClass.standard) &&
+                cs.contains(AgilityClass.jww))
+            .length;
+        final runningPairs =
+            runningPstd < runningPjww ? runningPstd : runningPjww;
+        final runningSubs = runningPairs < maxPremierDqSubstitutes
+            ? runningPairs
+            : maxPremierDqSubstitutes;
+        final runningEffQQs = runningDqs + runningSubs;
+        if (runningPoints >= pointsNeeded && runningEffQQs >= qqsNeeded) {
           unlocker = q;
           break;
         }
@@ -724,7 +768,7 @@ class NACQualificationTitle extends Achievement {
         contributingQIds: contributing,
       );
     }
-    final pointFrac = (points / pointsNeeded).clamp(0.0, 1.0);
+    final pointFrac = (totalPoints / pointsNeeded).clamp(0.0, 1.0);
     final qqFrac = (effectiveQQs / qqsNeeded).clamp(0.0, 1.0);
     final overall = ((pointFrac + qqFrac) / 2 * 100).round();
     return AchievementResult.inProgress(
@@ -737,25 +781,32 @@ class NACQualificationTitle extends Achievement {
 
   /// Live counts for the detail view.
   ({int points, int qqs}) liveCounts(List<Q> qs) {
-    final inWindow = qs.where(acceptsQ);
-    final points = inWindow.fold<int>(0, (s, q) => s + q.machPoints);
-    final dayMap = <DateTime, Set<AgilityClass>>{};
+    final inWindow = qs.where(acceptsQ).toList();
+    var points = 0;
     for (final q in inWindow) {
+      if (_isMasterStdOrJww(q)) points += q.machPoints;
+      if (_isPremierStdOrJww(q)) points += premierPointValue;
+    }
+    final dayMap = <DateTime, Set<AgilityClass>>{};
+    for (final q in inWindow.where(_isMasterStdOrJww)) {
       final d = DateTime(q.date.year, q.date.month, q.date.day);
       dayMap.putIfAbsent(d, () => {}).add(q.agilityClass);
     }
-    var dqs = 0;
-    var halves = 0;
-    for (final classes in dayMap.values) {
-      if (classes.contains(AgilityClass.standard) &&
-          classes.contains(AgilityClass.jww)) {
-        dqs++;
-      }
-      if (classes.contains(AgilityClass.premierStandard) ||
-          classes.contains(AgilityClass.premierJww)) {
-        halves++;
-      }
-    }
-    return (points: points, qqs: dqs + (halves / 2).floor());
+    final dqs = dayMap.values
+        .where((cs) =>
+            cs.contains(AgilityClass.standard) &&
+            cs.contains(AgilityClass.jww))
+        .length;
+    final premierStd = inWindow
+        .where((q) => q.agilityClass == AgilityClass.premierStandard)
+        .length;
+    final premierJww = inWindow
+        .where((q) => q.agilityClass == AgilityClass.premierJww)
+        .length;
+    final premierPairs = premierStd < premierJww ? premierStd : premierJww;
+    final subs = premierPairs < maxPremierDqSubstitutes
+        ? premierPairs
+        : maxPremierDqSubstitutes;
+    return (points: points, qqs: dqs + subs);
   }
 }
