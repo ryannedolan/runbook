@@ -7,7 +7,8 @@ import 'akc_scentwork.dart';
 typedef Gate = bool Function(List<Q> qs);
 
 /// A node in the achievement rules tree. Either a leaf (an Achievement),
-/// a group of children, or a gated sub-tree.
+/// a group of children, a gated sub-tree, or a dynamic emitter that
+/// produces a variable number of results from the Qs.
 class RuleNode {
   RuleNode._({
     this.achievement,
@@ -15,6 +16,7 @@ class RuleNode {
     this.children = const [],
     this.gate,
     this.gatedChild,
+    this.dynamicEmit,
   });
 
   /// Leaf node: a single achievement.
@@ -31,17 +33,31 @@ class RuleNode {
   factory RuleNode.gated({required Gate gate, required RuleNode child}) =>
       RuleNode._(gate: gate, gatedChild: child);
 
+  /// Dynamic node: produces zero or more results from the dog's Qs.
+  /// Used by numbered title families (MACH/MACH2/MACH3/...) where the
+  /// number of tiers worth evaluating depends on what the dog has
+  /// already achieved — no fixed cap.
+  factory RuleNode.dynamic({
+    required List<AchievementResult> Function(List<Q>) emit,
+  }) =>
+      RuleNode._(dynamicEmit: emit);
+
   final Achievement? achievement;
   final String? title;
   final List<RuleNode> children;
   final Gate? gate;
   final RuleNode? gatedChild;
+  final List<AchievementResult> Function(List<Q>)? dynamicEmit;
 
   /// Walks the tree and produces an evaluation result for every reachable
   /// achievement.
   void walk(List<Q> qs, List<AchievementResult> out) {
     if (achievement != null) {
       out.add(achievement!.evaluate(qs));
+      return;
+    }
+    if (dynamicEmit != null) {
+      out.addAll(dynamicEmit!(qs));
       return;
     }
     if (gate != null) {

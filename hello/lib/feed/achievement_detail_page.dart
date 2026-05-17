@@ -55,7 +55,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
               orElse: () => widget.item.result,
             );
         final activeAchievement = activeResult.achievement;
-        final chain = chainOf(activeAchievement);
+        final chain = chainOf(activeAchievement, qs: qs);
 
         // Resolve the currently-viewed sibling: defaults to active.
         Achievement viewedAchievement = activeAchievement;

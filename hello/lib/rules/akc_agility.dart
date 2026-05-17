@@ -194,42 +194,32 @@ final preferredFastChain = TitleProgression(
   ],
 );
 
-/// Time 2 Beat: T2B → T2B2 → T2B3 → ... Each cycle adds 15 fresh
-/// qualifying scores. (Rulebook also requires 100 points per cycle —
-/// not enforced today; tracked via Q.score is a TODO.)
-final t2bChain = TitleProgression(
-  name: 'T2B',
-  titles: [
-    for (var n = 1; n <= 5; n++)
-      _t(
-          id: n == 1 ? 'akc.t2b.t2b' : 'akc.t2b.t2b$n',
-          title: n == 1 ? 'T2B' : 'T2B$n',
-          description: n == 1
-              ? 'Time 2 Beat — 15 T2B Q\'s + 100 points'
-              : 'T2B$n — ${15 * n} T2B Q\'s + ${100 * n} points',
-          cls: AgilityClass.t2b,
-          level: AgilityLevel.master,
-          n: 15 * n),
-  ],
-);
+// ---------------------------------------------------------------------------
+// Numbered (uncapped) chains. MACH/PACH/PAX/T2B/T2BP have no real ceiling
+// — handlers can rack up MACH22 and beyond. Rather than baking in a
+// fixed range, we build each tier on demand and emit only as many as
+// the dog has earned + one in-progress. This keeps compute bounded by
+// reality (a typical user pays O(qs) + O(tiers_unlocked) work) and
+// removes the need to ever raise an artificial cap.
+// ---------------------------------------------------------------------------
 
-/// Time 2 Beat Preferred: T2BP → T2BP2 → ...
-final t2bPreferredChain = TitleProgression(
-  name: 'T2B Preferred',
-  titles: [
-    for (var n = 1; n <= 5; n++)
-      _t(
-          id: n == 1 ? 'akc.t2b.t2bp' : 'akc.t2b.t2bp$n',
-          title: n == 1 ? 'T2BP' : 'T2BP$n',
-          description: n == 1
-              ? 'Time 2 Beat Preferred — 15 T2B Pref Q\'s + 100 points'
-              : 'T2BP$n — ${15 * n} T2B Pref Q\'s + ${100 * n} points',
-          cls: AgilityClass.t2b,
-          level: AgilityLevel.master,
-          n: 15 * n,
-          preferred: true),
-  ],
-);
+/// Builds the T2B / T2BP tier-n title.
+LevelQCountTitle t2bTier(int n, {required bool preferred}) {
+  final idPrefix = preferred ? 'akc.t2b.t2bp' : 'akc.t2b.t2b';
+  final titlePrefix = preferred ? 'T2BP' : 'T2B';
+  return _t(
+    id: n == 1 ? idPrefix : '$idPrefix$n',
+    title: n == 1 ? titlePrefix : '$titlePrefix$n',
+    description: n == 1
+        ? '$titlePrefix — 15 ${preferred ? "T2B Pref" : "T2B"} Q\'s + 100 points'
+        : '$titlePrefix$n — ${15 * n} ${preferred ? "T2B Pref" : "T2B"} Q\'s '
+            '+ ${100 * n} points',
+    cls: AgilityClass.t2b,
+    level: AgilityLevel.master,
+    n: 15 * n,
+    preferred: preferred,
+  );
+}
 
 /// Triple Q: TQX (regular) and TQXP (preferred). 10 days where the dog
 /// earned a Master Std + Master JWW + Master FAST Q on the same day.
@@ -301,92 +291,187 @@ List<NACQualificationTitle> _nacTitles() {
 
 final nacChain = TitleProgression(name: 'NAC', titles: _nacTitles());
 
-/// MACH chain — MACH, MACH2, MACH3 (regular Master).
-final machChain = TitleProgression(
-  name: 'MACH',
-  titles: [
-    for (var n = 1; n <= 3; n++)
-      ChampionTitle(
-        id: n == 1 ? 'akc.mach' : 'akc.mach$n',
-        title: n == 1 ? 'MACH' : 'MACH$n',
-        description: n == 1
-            ? 'Master Agility Champion — 750 MACH points + 20 double Qs'
-            : 'MACH$n — ${n * 750} MACH points + ${n * 20} double Qs',
-        multiplier: n,
-        preferred: false,
-      ),
-  ],
-);
+/// Champion-family tiers — MACH, PACH, PAX. Each tier shares the same
+/// underlying point/QQ pool, just with multiplied thresholds.
+enum ChampionFamily { mach, pach, pax }
 
-/// PAX chain (Ch. 8 §7) — Preferred Agility Excellent. 20 preferred 2Qs
-/// per level. NO points required (this is the distinguishing
-/// characteristic vs. PACH).
-final paxChain = TitleProgression(
-  name: 'PAX',
-  titles: [
-    for (var n = 1; n <= 3; n++)
-      ChampionTitle(
-        id: n == 1 ? 'akc.pax' : 'akc.pax$n',
-        title: n == 1 ? 'PAX' : 'PAX$n',
-        description: n == 1
-            ? 'Preferred Agility Excellent — 20 preferred double Qs (no points required)'
-            : 'PAX$n — ${n * 20} preferred double Qs',
-        multiplier: n,
-        preferred: true,
-        pointsPerLevel: 0,
-      ),
-  ],
-);
+extension _ChampionFamilyX on ChampionFamily {
+  String get name => switch (this) {
+        ChampionFamily.mach => 'MACH',
+        ChampionFamily.pach => 'PACH',
+        ChampionFamily.pax => 'PAX',
+      };
+  String get _idPrefix => switch (this) {
+        ChampionFamily.mach => 'akc.mach',
+        ChampionFamily.pach => 'akc.pach',
+        ChampionFamily.pax => 'akc.pax',
+      };
+  bool get _preferred => this != ChampionFamily.mach;
+  int get _pointsPerLevel => this == ChampionFamily.pax ? 0 : 750;
+}
 
-/// PACH chain (Ch. 8 §8) — Preferred Agility Champion. 750 PACH points
-/// + 20 preferred 2Qs per level. Mirrors MACH for the Preferred division.
-final pachChain = TitleProgression(
-  name: 'PACH',
-  titles: [
-    for (var n = 1; n <= 3; n++)
-      ChampionTitle(
-        id: n == 1 ? 'akc.pach' : 'akc.pach$n',
-        title: n == 1 ? 'PACH' : 'PACH$n',
-        description: n == 1
-            ? 'Preferred Agility Champion — 750 PACH points + 20 preferred double Qs'
-            : 'PACH$n — ${n * 750} PACH points + ${n * 20} preferred double Qs',
-        multiplier: n,
-        preferred: true,
-      ),
-  ],
-);
+/// Builds the tier-n title for a champion family.
+ChampionTitle championTier(ChampionFamily family, int n) => ChampionTitle(
+      id: n == 1 ? family._idPrefix : '${family._idPrefix}$n',
+      title: n == 1 ? family.name : '${family.name}$n',
+      description: _championDescription(family, n),
+      multiplier: n,
+      preferred: family._preferred,
+      pointsPerLevel: family._pointsPerLevel,
+    );
 
-/// All chains in the order we usually want to walk them.
+String _championDescription(ChampionFamily f, int n) {
+  switch (f) {
+    case ChampionFamily.mach:
+      return n == 1
+          ? 'Master Agility Champion — 750 MACH points + 20 double Qs'
+          : 'MACH$n — ${n * 750} MACH points + ${n * 20} double Qs';
+    case ChampionFamily.pach:
+      return n == 1
+          ? 'Preferred Agility Champion — 750 PACH points + 20 preferred double Qs'
+          : 'PACH$n — ${n * 750} PACH points + ${n * 20} preferred double Qs';
+    case ChampionFamily.pax:
+      return n == 1
+          ? 'Preferred Agility Excellent — 20 preferred double Qs (no points required)'
+          : 'PAX$n — ${n * 20} preferred double Qs';
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Dynamic tier emitters. Each walks the dog's Qs once to compute the
+// aggregate stat for its family, then evaluates only tiers
+// 1..(unlocked+1). Cost is O(qs) for the aggregate + O(qs * tiers) for
+// per-tier evaluation, both bounded by what the dog has actually done.
+// ---------------------------------------------------------------------------
+
+/// Emit MACH / PACH / PAX tiers up to (unlocked + 1).
+List<AchievementResult> emitChampionTiers(
+    List<Q> qs, ChampionFamily family) {
+  final preferred = family._preferred;
+  final masterQs = qs.where((q) =>
+      q.level == AgilityLevel.master &&
+      q.preferred == preferred &&
+      (q.agilityClass == AgilityClass.standard ||
+          q.agilityClass == AgilityClass.jww));
+  if (masterQs.isEmpty) return const [];
+
+  final totalPoints = masterQs.fold<int>(0, (s, q) => s + q.machPoints);
+  final dayMap = <DateTime, Set<AgilityClass>>{};
+  for (final q in masterQs) {
+    final d = DateTime(q.date.year, q.date.month, q.date.day);
+    dayMap.putIfAbsent(d, () => {}).add(q.agilityClass);
+  }
+  final doubleQs = dayMap.values
+      .where((cs) =>
+          cs.contains(AgilityClass.standard) && cs.contains(AgilityClass.jww))
+      .length;
+
+  // How many tiers are fully unlocked? PAX (pointsPerLevel=0) is
+  // 2Qs-only; MACH and PACH need both points and QQs.
+  final ppl = family._pointsPerLevel;
+  final byPoints = ppl == 0 ? doubleQs ~/ 20 : totalPoints ~/ ppl;
+  final byDQs = doubleQs ~/ 20;
+  final tiersUnlocked = byPoints < byDQs ? byPoints : byDQs;
+
+  return [
+    for (var n = 1; n <= tiersUnlocked + 1; n++) championTier(family, n).evaluate(qs),
+  ];
+}
+
+/// Emit T2B / T2BP tiers up to (unlocked + 1).
+List<AchievementResult> emitT2bTiers(
+  List<Q> qs, {
+  required bool preferred,
+}) {
+  final qsCount = qs
+      .where((q) =>
+          q.agilityClass == AgilityClass.t2b && q.preferred == preferred)
+      .length;
+  if (qsCount == 0) return const [];
+  final tiersUnlocked = qsCount ~/ 15;
+  return [
+    for (var n = 1; n <= tiersUnlocked + 1; n++)
+      t2bTier(n, preferred: preferred).evaluate(qs),
+  ];
+}
+
+/// All static chains in the order we usually want to walk them.
+/// Numbered/uncapped chains (MACH/PACH/PAX/T2B/T2BP) are not in here —
+/// they're emitted dynamically per-Q-set.
 final allAkcChains = <TitleProgression>[
   regularStandardChain,
   regularJwwChain,
-  machChain,
   nacChain,
   regularFastChain,
   tqxChain,
-  t2bChain,
   preferredStandardChain,
   preferredJwwChain,
-  paxChain,
-  pachChain,
   preferredFastChain,
   tqxPreferredChain,
-  t2bPreferredChain,
   premierStandardChain,
   premierJwwChain,
 ];
 
 /// Look up the chain that contains a given achievement, if any.
 /// Scans agility, scentwork, and FastCAT progressions.
-TitleProgression? chainOf(Achievement a) {
+///
+/// For numbered/uncapped families (MACH/PACH/PAX/T2B/T2BP, FastCAT)
+/// the returned chain is sized to cover tiers 1..max(opened+1,
+/// actuallyUnlocked+1), so the detail page's chain pills stay useful
+/// even for dogs deep into a chain (e.g. MACH22).
+TitleProgression? chainOf(Achievement a, {List<Q>? qs}) {
   for (final c in allAkcChains) {
-    if (c.titles.contains(a)) return c;
+    for (final t in c.titles) {
+      if (t.id == a.id) return c;
+    }
   }
   for (final c in allScentChains) {
-    if (c.titles.contains(a)) return c;
+    for (final t in c.titles) {
+      if (t.id == a.id) return c;
+    }
   }
-  if (fastCATChain.titles.contains(a)) return fastCATChain;
+  if (a is ChampionTitle) return _championChainFor(a, qs);
+  if (a is LevelQCountTitle && a.agilityClass == AgilityClass.t2b) {
+    return _t2bChainFor(a, qs);
+  }
+  if (a is PointAccumulationTitle && a.sportFilter == Sport.fastCAT) {
+    return fastCATChainFor(a, qs: qs);
+  }
   return null;
+}
+
+TitleProgression _championChainFor(ChampionTitle opened, List<Q>? qs) {
+  final family = opened.preferred
+      ? (opened.pointsPerLevel == 0 ? ChampionFamily.pax : ChampionFamily.pach)
+      : ChampionFamily.mach;
+  var maxTier = opened.multiplier + 1;
+  if (qs != null) {
+    final emitted = emitChampionTiers(qs, family);
+    final unlocked = emitted.where((r) => r.isUnlocked).length;
+    if (unlocked + 1 > maxTier) maxTier = unlocked + 1;
+  }
+  return TitleProgression(
+    name: family.name,
+    titles: [for (var n = 1; n <= maxTier; n++) championTier(family, n)],
+  );
+}
+
+TitleProgression _t2bChainFor(LevelQCountTitle opened, List<Q>? qs) {
+  // T2B titles use 15n Q's; opened.qCountNeeded / 15 gives the tier.
+  final tier = opened.qCountNeeded ~/ 15;
+  var maxTier = tier + 1;
+  if (qs != null) {
+    final emitted = emitT2bTiers(qs, preferred: opened.preferred);
+    final unlocked = emitted.where((r) => r.isUnlocked).length;
+    if (unlocked + 1 > maxTier) maxTier = unlocked + 1;
+  }
+  return TitleProgression(
+    name: opened.preferred ? 'T2B Preferred' : 'T2B',
+    titles: [
+      for (var n = 1; n <= maxTier; n++)
+        t2bTier(n, preferred: opened.preferred),
+    ],
+  );
 }
 
 /// The decision tree, with gates that skip whole sub-trees when no
@@ -407,12 +492,13 @@ RuleNode akcAgilityTree() => RuleNode.group(
           ]),
         ),
 
-        // T2B — only evaluated if there's at least one T2B Q.
+        // T2B — only evaluated if there's at least one T2B Q. Tiers
+        // are emitted dynamically (no cap) — see emitT2bTiers.
         RuleNode.gated(
           gate: (qs) => qs.any((q) => q.agilityClass == AgilityClass.t2b),
           child: RuleNode.group(title: 'T2B', children: [
-            for (final t in t2bChain.titles) RuleNode.leaf(t),
-            for (final t in t2bPreferredChain.titles) RuleNode.leaf(t),
+            RuleNode.dynamic(emit: (qs) => emitT2bTiers(qs, preferred: false)),
+            RuleNode.dynamic(emit: (qs) => emitT2bTiers(qs, preferred: true)),
           ]),
         ),
 
@@ -436,6 +522,7 @@ RuleNode akcAgilityTree() => RuleNode.group(
         ),
 
         // MACH — needs a regular Master Q to even be worth evaluating.
+        // MACH/MACH2/... are emitted dynamically (no cap).
         RuleNode.gated(
           gate: (qs) => qs.any((q) =>
               q.level == AgilityLevel.master &&
@@ -445,7 +532,9 @@ RuleNode akcAgilityTree() => RuleNode.group(
           child: RuleNode.group(
             title: 'MACH',
             children: [
-              for (final t in machChain.titles) RuleNode.leaf(t),
+              RuleNode.dynamic(
+                emit: (qs) => emitChampionTiers(qs, ChampionFamily.mach),
+              ),
               // NAC qualification reuses the same MACH-points + QQ
               // machinery, gated alongside.
               for (final t in nacChain.titles) RuleNode.leaf(t),
@@ -454,7 +543,7 @@ RuleNode akcAgilityTree() => RuleNode.group(
         ),
 
         // PAX + PACH — need a preferred Master Std/JWW Q. PAX is 2Qs
-        // only; PACH is points + 2Qs.
+        // only; PACH is points + 2Qs. Both emit dynamic tiers.
         RuleNode.gated(
           gate: (qs) => qs.any((q) =>
               q.level == AgilityLevel.master &&
@@ -464,8 +553,12 @@ RuleNode akcAgilityTree() => RuleNode.group(
           child: RuleNode.group(
             title: 'PAX/PACH',
             children: [
-              for (final t in paxChain.titles) RuleNode.leaf(t),
-              for (final t in pachChain.titles) RuleNode.leaf(t),
+              RuleNode.dynamic(
+                emit: (qs) => emitChampionTiers(qs, ChampionFamily.pax),
+              ),
+              RuleNode.dynamic(
+                emit: (qs) => emitChampionTiers(qs, ChampionFamily.pach),
+              ),
             ],
           ),
         ),

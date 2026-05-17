@@ -392,6 +392,46 @@ void main() {
       final rs = RulesEngine().evaluate(qs);
       expect(find(rs, 'akc.mach').isUnlocked, isTrue);
     });
+
+    test('No artificial cap: MACH22 emits when earned, plus MACH23 in progress', () {
+      // 22 levels worth: 22 × 750 = 16500 points, 22 × 20 = 440 double-Qs.
+      final qs = <Q>[];
+      for (var i = 0; i < 440; i++) {
+        final d = DateTime(2026, 1, 1).add(Duration(days: i));
+        qs.add(q(
+          cls: AgilityClass.standard,
+          level: AgilityLevel.master,
+          date: d,
+          machPoints: 40, // 22 × 750 spread over 440 days
+        ));
+        qs.add(q(
+          cls: AgilityClass.jww,
+          level: AgilityLevel.master,
+          date: d,
+          machPoints: 0,
+        ));
+      }
+      final rs = RulesEngine().evaluate(qs);
+      // MACH22 unlocked, MACH23 in progress, MACH24 NOT emitted.
+      expect(find(rs, 'akc.mach22').isUnlocked, isTrue);
+      expect(maybeFind(rs, 'akc.mach23')?.isUnlocked ?? true, isFalse);
+      expect(maybeFind(rs, 'akc.mach23'), isNotNull);
+      expect(maybeFind(rs, 'akc.mach24'), isNull);
+    });
+
+    test('Gating: MACH2 does not appear until MACH is unlocked', () {
+      // Just under one tier: 19 2Qs + 749 points.
+      final qs = <Q>[];
+      for (var i = 0; i < 19; i++) {
+        final d = DateTime(2026, 1, 1).add(Duration(days: i * 7));
+        qs.add(q(cls: AgilityClass.standard, level: AgilityLevel.master, date: d, machPoints: 20));
+        qs.add(q(cls: AgilityClass.jww, level: AgilityLevel.master, date: d, machPoints: 20));
+      }
+      final rs = RulesEngine().evaluate(qs);
+      // MACH is in progress; MACH2 should NOT show up yet.
+      expect(find(rs, 'akc.mach').isUnlocked, isFalse);
+      expect(maybeFind(rs, 'akc.mach2'), isNull);
+    });
   });
 
   // ============================================================
