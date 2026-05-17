@@ -11,7 +11,13 @@ import 'dog_profile_page.dart';
 import 'feed_items.dart';
 import 'widgets/icon_chiclet.dart';
 
-class AchievementDetailPage extends StatelessWidget {
+/// Achievement detail. The page's identity is the *active* title (the
+/// one the user opened from the feed). The chain pills below the header
+/// let the user peek at sibling titles' Qs and stats without leaving —
+/// only the lower sections (`_qsSection`, `_statsSection`) re-bind to
+/// the viewed title; the header, app bar, and chain remain anchored on
+/// the active title.
+class AchievementDetailPage extends StatefulWidget {
   const AchievementDetailPage({
     super.key,
     required this.repo,
@@ -22,47 +28,78 @@ class AchievementDetailPage extends StatelessWidget {
   final AchievementFeedItem item;
 
   @override
+  State<AchievementDetailPage> createState() => _AchievementDetailPageState();
+}
+
+class _AchievementDetailPageState extends State<AchievementDetailPage> {
+  /// Which chain title's Qs/stats are currently shown below. Defaults
+  /// to the active title; tapping a chain pill flips it.
+  String? _viewedAchievementId;
+
+  @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: repo,
+      animation: widget.repo,
       builder: (context, _) {
-        final dog = repo.dogById(item.dog.id);
+        final dog = widget.repo.dogById(widget.item.dog.id);
         if (dog == null) {
           return Scaffold(
             appBar: AppBar(title: const Text('Achievement')),
             body: const Center(child: Text('Dog no longer exists.')),
           );
         }
-        final qs = repo.qsForDog(dog.id);
+        final qs = widget.repo.qsForDog(dog.id);
         final engine = RulesEngine();
-        final fresh = engine.evaluate(qs).firstWhere(
-              (r) => r.achievement.id == item.result.achievement.id,
-              orElse: () => item.result,
+        final activeResult = engine.evaluate(qs).firstWhere(
+              (r) => r.achievement.id == widget.item.result.achievement.id,
+              orElse: () => widget.item.result,
             );
-        final achievement = fresh.achievement;
-        final chain = chainOf(achievement);
-        final cs = Theme.of(context).colorScheme;
+        final activeAchievement = activeResult.achievement;
+        final chain = chainOf(activeAchievement);
 
+        // Resolve the currently-viewed sibling: defaults to active.
+        Achievement viewedAchievement = activeAchievement;
+        if (chain != null && _viewedAchievementId != null) {
+          for (final t in chain.titles) {
+            if (t.id == _viewedAchievementId) {
+              viewedAchievement = t;
+              break;
+            }
+          }
+        }
+        final viewedResult = viewedAchievement.id == activeAchievement.id
+            ? activeResult
+            : viewedAchievement.evaluate(qs);
+
+        final cs = Theme.of(context).colorScheme;
         return Scaffold(
           appBar: AppBar(
-            title: Text(achievement.title),
-            backgroundColor: fresh.isUnlocked
+            title: Text(activeAchievement.title),
+            backgroundColor: activeResult.isUnlocked
                 ? const Color(0xFFFFE9A8)
                 : cs.surfaceContainerHighest,
           ),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
-              _header(context, fresh, dog.callName),
+              _header(context, activeResult, dog.callName),
               const SizedBox(height: 24),
-              if (chain != null) _chainSection(context, chain, achievement, qs, dog.id),
-              _qsSection(context, fresh, qs, dog.id),
-              _statsSection(context, fresh, qs),
+              if (chain != null)
+                _chainSection(
+                  context,
+                  chain,
+                  viewedAchievement,
+                  qs,
+                ),
+              if (viewedAchievement.id != activeAchievement.id)
+                _viewingBanner(context, viewedAchievement, activeAchievement),
+              _qsSection(context, viewedResult, qs, dog.id),
+              _statsSection(context, viewedResult, qs),
               const SizedBox(height: 24),
               TextButton.icon(
                 onPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => DogProfilePage(repo: repo, dogId: dog.id),
+                    builder: (_) => DogProfilePage(repo: widget.repo, dogId: dog.id),
                   ));
                 },
                 icon: const Icon(Icons.pets),
@@ -72,6 +109,46 @@ class AchievementDetailPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  /// Small "Viewing <title>" strip that makes it obvious the Qs/stats
+  /// sections are showing a sibling title in the chain, not the active
+  /// one. Tap to snap back.
+  Widget _viewingBanner(
+    BuildContext context,
+    Achievement viewed,
+    Achievement active,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () => setState(() => _viewedAchievementId = null),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: cs.primaryContainer.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.visibility, size: 16, color: cs.onPrimaryContainer),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Viewing ${viewed.title} below. Tap to return to ${active.title}.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: cs.onPrimaryContainer,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -164,9 +241,8 @@ class AchievementDetailPage extends StatelessWidget {
   Widget _chainSection(
     BuildContext context,
     TitleProgression chain,
-    Achievement current,
+    Achievement viewed,
     List<Q> qs,
-    String dogId,
   ) {
     final cs = Theme.of(context).colorScheme;
     final engine = RulesEngine();
@@ -178,7 +254,7 @@ class AchievementDetailPage extends StatelessWidget {
       return null;
     }
 
-    final i = chain.titles.indexOf(current);
+    final i = chain.titles.indexOf(viewed);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -202,27 +278,13 @@ class AchievementDetailPage extends StatelessWidget {
                 isCurrent: idx == i,
                 onTap: idx == i
                     ? null
-                    : () => _openChainTitle(context, chain.titles[idx], qs),
+                    : () => setState(() =>
+                        _viewedAchievementId = chain.titles[idx].id),
               ),
           ],
         ),
         const SizedBox(height: 24),
       ],
-    );
-  }
-
-  /// Navigate to another title in the chain. We always evaluate the
-  /// tapped achievement directly (rather than relying on the engine's
-  /// hasProgress filter) so the user can drill into far-future titles
-  /// with zero contributing Qs and still see "0 of N" with the chain
-  /// context intact.
-  void _openChainTitle(BuildContext context, Achievement title, List<Q> qs) {
-    final result = title.evaluate(qs);
-    final next = AchievementFeedItem(dog: item.dog, result: result, allQs: qs);
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => AchievementDetailPage(repo: repo, item: next),
-      ),
     );
   }
 
@@ -271,7 +333,7 @@ class AchievementDetailPage extends StatelessWidget {
       child: InkWell(
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => AddQPage(repo: repo, editing: q),
+            builder: (_) => AddQPage(repo: widget.repo, editing: q),
           ),
         ),
         borderRadius: BorderRadius.circular(12),
