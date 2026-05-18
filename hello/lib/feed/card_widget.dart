@@ -390,11 +390,16 @@ class TrialDayCard extends StatelessWidget {
     required this.date,
     required this.qs,
     required this.onTapQ,
+    this.onOpenDay,
   });
   final Dog dog;
   final DateTime date;
   final List<Q> qs;
   final void Function(Q) onTapQ;
+
+  /// Tapping the date header opens a per-day detail view. Tapping an
+  /// individual Q ribbon still goes straight to edit.
+  final VoidCallback? onOpenDay;
 
   bool get _hasDoubleQ {
     final regularDoubleQ = qs.any((q) =>
@@ -431,24 +436,31 @@ class TrialDayCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Text(
-                  DateFormat('EEE, MMM d').format(date),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: cs.onSurfaceVariant,
-                  ),
+            InkWell(
+              onTap: onOpenDay,
+              borderRadius: BorderRadius.circular(6),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  children: [
+                    Text(
+                      DateFormat('EEE, MMM d').format(date),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '· ${dog.callName} · ${qs.length} Q${qs.length == 1 ? '' : 's'}',
+                      style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
+                    ),
+                    const Spacer(),
+                    if (_hasDoubleQ) const _DoubleQBadge(),
+                  ],
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  '· ${dog.callName} · ${qs.length} Q${qs.length == 1 ? '' : 's'}',
-                  style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
-                ),
-                const Spacer(),
-                if (_hasDoubleQ) const _DoubleQBadge(),
-              ],
+              ),
             ),
             const SizedBox(height: 4),
             Wrap(

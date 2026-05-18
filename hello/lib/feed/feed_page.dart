@@ -14,6 +14,7 @@ import 'dog_profile_page.dart';
 import 'feed_items.dart';
 import 'q_history_page.dart';
 import 'tips.dart';
+import 'trial_day_detail_page.dart';
 
 class FeedPage extends StatelessWidget {
   const FeedPage({super.key, required this.repo});
@@ -166,11 +167,14 @@ class FeedPage extends StatelessWidget {
         }
         for (final key in order) {
           final day = byKey[key]!;
+          final dayDog = day.first.dog;
+          final dayDate = day.first.q.date;
           widgets.add(TrialDayCard(
-            dog: day.first.dog,
-            date: day.first.q.date,
+            dog: dayDog,
+            date: dayDate,
             qs: [for (final q in day) q.q],
-            onTapQ: (q) => _onEditQ(context, day.first.dog, q),
+            onTapQ: (q) => _onEditQ(context, dayDog, q),
+            onOpenDay: () => _onOpenTrialDay(context, dayDog, dayDate),
           ));
         }
       } else if (item is AchievementFeedItem) {
@@ -368,6 +372,15 @@ class FeedPage extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => AnalyticsDetailPage(repo: repo, item: item),
+      ),
+    );
+  }
+
+  void _onOpenTrialDay(BuildContext context, Dog dog, DateTime date) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            TrialDayDetailPage(repo: repo, dogId: dog.id, date: date),
       ),
     );
   }
