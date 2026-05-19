@@ -11,9 +11,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: hello
     steps:
       - uses: actions/checkout@v4
 
@@ -36,6 +33,6 @@ jobs:
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: hello/build/web
+          publish_dir: build/web
           publish_branch: gh-pages
           force_orphan: true
