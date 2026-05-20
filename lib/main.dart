@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import 'feed/feed_page.dart';
@@ -8,10 +6,9 @@ import 'repo/repo.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final repo = await Repo.open();
-  // Fire-and-forget: backfill from bundled YAML datasets. Idempotent
-  // and safe to interleave with the first frame; the repo notifies
-  // listeners when new Qs land.
-  unawaited(repo.backfillFromAssets());
+  // No startup backfill — the JSON datasets aren't bundled into the
+  // build anymore. Backfill is triggered per-dog when the user saves
+  // a dog with an AKC ID (see add_dog.dart).
   runApp(RunbookApp(repo: repo));
 }
 

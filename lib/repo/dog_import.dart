@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/services.dart' show AssetManifest, rootBundle;
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
 import '../models/q.dart';
@@ -13,62 +14,33 @@ class ImportedQ {
   final String dedupeKey;
 }
 
-/// Header for a dataset.
-class DogDataset {
-  DogDataset({
-    required this.akcId,
-    this.callName,
-    this.registeredName,
-  });
-  final String akcId;
-  final String? callName;
-  final String? registeredName;
+/// Hardcoded gh-pages location of the prebuilt JSON datasets. Used by
+/// the mobile builds (web uses a relative URL — see [_datasetUri]).
+const String _datasetMobileBaseUrl = 'https://ryannedolan.github.io/runbook';
+
+/// Resolves the URL for a given AKC ID's prebuilt dataset.
+/// - On web, uses a relative URL so localhost + production both work
+///   without further config.
+/// - On mobile, hits the deployed gh-pages location.
+Uri _datasetUri(String akcId) {
+  if (kIsWeb) return Uri.base.resolve('dogs/$akcId.json');
+  return Uri.parse('$_datasetMobileBaseUrl/dogs/$akcId.json');
 }
 
-/// What we found inside `assets/dogs/*.json`, indexed by AKC ID.
-class DatasetIndex {
-  DatasetIndex(this.byAkcId);
-  final Map<String, DogDataset> byAkcId;
-
-  DogDataset? bestMatchByName(String callName) {
-    final norm = callName.trim().toLowerCase();
-    for (final d in byAkcId.values) {
-      if (d.callName?.trim().toLowerCase() == norm) return d;
-    }
-    return null;
-  }
-}
-
-/// List every `assets/dogs/*.json` and read its header. We parse Qs on
-/// demand only when a dog actually needs to be backfilled.
-Future<DatasetIndex> loadDatasetIndex() async {
-  final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-  final paths = manifest
-      .listAssets()
-      .where((p) => p.startsWith('assets/dogs/') && p.endsWith('.json'))
-      .toList();
-  final out = <String, DogDataset>{};
-  for (final path in paths) {
-    final raw = await rootBundle.loadString(path);
-    final obj = jsonDecode(raw) as Map<String, dynamic>;
-    final akcId = (obj['akcId'] as String?) ??
-        path.split('/').last.replaceAll('.json', '');
-    out[akcId] = DogDataset(
-      akcId: akcId,
-      callName: obj['callName'] as String?,
-      registeredName: obj['registeredName'] as String?,
-    );
-  }
-  return DatasetIndex(out);
-}
-
-/// Read & parse `assets/dogs/$akcId.json`. Returns the Qs we know how
-/// to model (AKC agility/scentwork/FastCAT). Non-AKC records (e.g.
-/// ASCA agility, Barn Hunt) and elements we don't model (e.g. Handler
-/// Discrimination) are silently skipped.
+/// Fetch and parse the prebuilt dataset for [akcId]. Returns an empty
+/// list when the dataset doesn't exist (e.g. typo'd AKC ID) or the
+/// network request fails — backfill is best-effort and never throws
+/// to its caller.
 Future<List<ImportedQ>> loadQsForAkcId(String akcId, String dogId) async {
-  final raw = await rootBundle.loadString('assets/dogs/$akcId.json');
-  return parseDogJson(raw, dogId: dogId);
+  try {
+    final res = await http.get(_datasetUri(akcId));
+    if (res.statusCode != 200) return const [];
+    return parseDogJson(res.body, dogId: dogId);
+  } catch (_) {
+    // Offline, DNS failure, malformed JSON, etc. Silent — backfill is
+    // best-effort and the user can retry by re-saving the dog.
+    return const [];
+  }
 }
 
 List<ImportedQ> parseDogJson(String raw, {required String dogId}) {

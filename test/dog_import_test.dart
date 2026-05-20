@@ -153,16 +153,13 @@ void main() {
     });
   });
 
-  group('Repo.backfillFromAssets', () {
+  group('Repo.backfillForDog', () {
     test('imports new Qs and is idempotent', () async {
       SharedPreferences.setMockInitialValues({});
       final repo = await Repo.open();
       final dog = Dog.create(callName: 'Echo', akcId: 'TESTID');
       await repo.addDog(dog);
 
-      Future<DatasetIndex> index() async => DatasetIndex({
-            'TESTID': DogDataset(akcId: 'TESTID', callName: 'Echo'),
-          });
       Future<List<ImportedQ>> qs(String akcId, String dogId) async {
         final q = Q.create(
           dogId: dogId,
@@ -174,44 +171,43 @@ void main() {
         return [ImportedQ(q: q, dedupeKey: dedupeKeyFor(q))];
       }
 
-      final firstAdded = await repo.backfillFromAssets(
-        loadIndex: index,
-        loadQs: qs,
-      );
+      final firstAdded = await repo.backfillForDog(dog, loadQs: qs);
       expect(firstAdded, 1);
       expect(repo.qsForDog(dog.id), hasLength(1));
 
-      final secondAdded = await repo.backfillFromAssets(
-        loadIndex: index,
-        loadQs: qs,
-      );
+      final secondAdded = await repo.backfillForDog(dog, loadQs: qs);
       expect(secondAdded, 0);
       expect(repo.qsForDog(dog.id), hasLength(1));
     });
 
-    test('auto-links unlinked dog by call name', () async {
+    test('dog without AKC ID is a no-op', () async {
       SharedPreferences.setMockInitialValues({});
       final repo = await Repo.open();
-      final dog = Dog.create(callName: 'Echo'); // no AKC id yet.
+      final dog = Dog.create(callName: 'Unmatched'); // no akcId
       await repo.addDog(dog);
+      final n = await repo.backfillForDog(dog,
+          loadQs: (a, d) async => throw StateError('should not fetch'));
+      expect(n, 0);
+    });
 
-      Future<DatasetIndex> index() async => DatasetIndex({
-            'AKC-99': DogDataset(akcId: 'AKC-99', callName: 'Echo'),
-          });
-      Future<List<ImportedQ>> qs(String akcId, String dogId) async => [];
-
-      await repo.backfillFromAssets(loadIndex: index, loadQs: qs);
-      expect(repo.dogById(dog.id)?.akcId, 'AKC-99');
+    test('fetch failure yields 0, no crash', () async {
+      SharedPreferences.setMockInitialValues({});
+      final repo = await Repo.open();
+      final dog = Dog.create(callName: 'Echo', akcId: 'TESTID');
+      await repo.addDog(dog);
+      final n = await repo.backfillForDog(dog,
+          loadQs: (a, d) async => throw Exception('network'));
+      expect(n, 0);
     });
   });
 
-  group('bundled assets', () {
-    // Loads every assets/dogs/*.json through the real importer. Catches
+  group('generated dataset files', () {
+    // Loads every web/dogs/*.json through the real importer. Catches
     // schema drift from the upstream YAML datasets. Requires the JSON
-    // assets to exist — run `dart run tool/build_dog_assets.dart` if
+    // files to exist — run `dart run tool/build_dog_assets.dart` if
     // you've edited the YAML source files.
-    test('every bundled JSON parses with no dedupe collisions', () {
-      final files = Directory('assets/dogs')
+    test('every generated JSON parses with no dedupe collisions', () {
+      final files = Directory('web/dogs')
           .listSync()
           .whereType<File>()
           .where((f) => f.path.endsWith('.json'))

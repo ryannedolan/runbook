@@ -48,6 +48,12 @@ dependencies:
   share_plus: ^10.1.4
   path_provider: ^2.1.5
 
+  # Per-dog HTTP backfill: when the user saves a dog with an AKC ID,
+  # we fetch the prebuilt JSON from the deployed static site instead
+  # of bundling it in the APK. Lets us refresh imports without
+  # rebuilding the app.
+  http: ^1.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -92,12 +98,12 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # Static Q datasets, one JSON file per AKC ID. The committed source
-  # of truth lives in data/dogs/*.yaml (human/agent-friendly); these
-  # JSON files are generated from them by tool/build_dog_assets.dart
-  # and bundled into the web build. The client reads JSON only.
-  assets:
-    - assets/dogs/
+  # No bundled assets. Q datasets live at web/dogs/*.json (generated
+  # from data/dogs/*.yaml by tool/build_dog_assets.dart) and are
+  # fetched over HTTPS during per-dog backfill — the web build serves
+  # them at /dogs/<akc>.json and the mobile app uses the same URL from
+  # the gh-pages deployment. The icon source at assets/icon/ is only
+  # read by `dart run flutter_launcher_icons` at dev time.
 
   # To add assets to your application, add an assets section, like this:
   # assets:

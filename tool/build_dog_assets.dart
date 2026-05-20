@@ -1,9 +1,12 @@
-// Converts data/dogs/*.yaml into assets/dogs/*.json.
+// Converts data/dogs/*.yaml into web/dogs/*.json.
 //
 // Source files in data/ are human/agent-friendly YAML (multi-doc,
-// comments at the top for AKC number + call name). The web app only
-// reads the JSON output, which keeps the client tiny: no YAML parser,
-// just dart:convert.
+// comments at the top for AKC number + call name). The generated JSON
+// is served as static files from the deployed site (and from
+// `flutter run -d web-server`); the client never reads YAML directly.
+// The output lives under web/ rather than assets/ so it's published
+// by GitHub Pages but NOT bundled into the mobile APK — mobile fetches
+// the same URL over HTTPS at backfill time.
 //
 // Run from the package root (the directory containing pubspec.yaml):
 //   dart run tool/build_dog_assets.dart
@@ -16,7 +19,7 @@ import 'package:yaml/yaml.dart';
 void main(List<String> args) {
   final root = Directory.current;
   final inDir = Directory('${root.path}/data/dogs');
-  final outDir = Directory('${root.path}/assets/dogs');
+  final outDir = Directory('${root.path}/web/dogs');
   if (!inDir.existsSync()) {
     stderr.writeln('No data/dogs directory at ${inDir.path}');
     exit(1);

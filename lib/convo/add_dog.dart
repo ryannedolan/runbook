@@ -152,11 +152,12 @@ class _AddDogPageState extends State<AddDogPage> {
       clearAkcId: newAkcId == null,
     );
     final result = await widget.repo.upsertDog(dog);
-    // If we just set or changed the AKC ID, kick the backfill so the
-    // dog's static-file Qs land without an app restart.
-    if (newAkcId != null && newAkcId != base?.akcId) {
-      // Fire and forget — repo notifies listeners when Qs land.
-      unawaited(widget.repo.backfillFromAssets());
+    // Backfill for this dog whenever it's saved with an AKC ID, even
+    // on no-op edits — re-saving is the user-visible way to pull
+    // fresh Qs from the deployed dataset. The fetch is async and
+    // best-effort; the repo notifies listeners when new Qs land.
+    if (newAkcId != null) {
+      unawaited(widget.repo.backfillForDog(result.dog));
     }
     if (mounted) Navigator.of(context).pop(result);
   }
